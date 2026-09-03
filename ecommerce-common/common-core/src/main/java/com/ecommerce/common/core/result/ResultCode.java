@@ -1,0 +1,44 @@
+package com.ecommerce.common.core.result;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+/**
+ * Common business result codes.
+ */
+@Getter
+@AllArgsConstructor
+public enum ResultCode {
+
+    SUCCESS(200, "Success"),
+    FAIL(500, "Operation failed"),
+    BAD_REQUEST(400, "Bad Request"),
+    UNAUTHORIZED(401, "Unauthorized"),
+    FORBIDDEN(403, "Forbidden"),
+    NOT_FOUND(404, "Not Found"),
+    INTERNAL_ERROR(500, "Internal Server Error"),
+
+    // Common business codes (1xxx)
+    PARAM_ERROR(1001, "Parameter validation error"),
+
+    // User module codes (2xxx)
+    USER_NOT_FOUND(2001, "User not found"),
+    USER_ALREADY_EXISTS(2002, "User already exists"),
+
+    // Product module codes (3xxx)
+    PRODUCT_NOT_FOUND(3001, "Product not found"),
+    PRODUCT_OFF_SHELF(3002, "Product is off shelf"),
+
+    // Inventory module codes (4xxx)
+    INVENTORY_NOT_ENOUGH(4001, "Inventory not enough"),
+    INVENTORY_NOT_FOUND(4002, "Inventory record not found"),
+    INVENTORY_LOCK_FAILED(4003, "Failed to acquire inventory lock"),
+    INVENTORY_ADJUST_INVALID(4004, "Stock adjustment would result in negative stock"),
+
+    // Order module codes (5xxx)
+    ORDER_NOT_FOUND(5001, "Order not found"),
+    ORDER_STATUS_ERROR(5002, "Order status error");
+
+    private final int code;
+    private final String message;
+}

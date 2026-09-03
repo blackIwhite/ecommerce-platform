@@ -1,0 +1,5 @@
+com.ecommerce.common.web.handler.GlobalExceptionHandler
+com.ecommerce.common.web.config.JacksonConfig
+com.ecommerce.common.web.config.WebMvcConfig
+com.ecommerce.common.web.interceptor.UserContextInterceptor
+com.ecommerce.common.web.interceptor.RequireLoginInterceptor

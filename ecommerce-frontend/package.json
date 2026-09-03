@@ -1,0 +1,10 @@
+{
+  "name": "ecommerce-frontend",
+  "private": true,
+  "scripts": {
+    "dev:mall": "pnpm --filter mall dev",
+    "dev:admin": "pnpm --filter admin dev",
+    "build:mall": "pnpm --filter mall build",
+    "build:admin": "pnpm --filter admin build"
+  }
+}

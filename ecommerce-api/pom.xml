@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.ecommerce</groupId>
+        <artifactId>ecommerce-platform</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ecommerce-api</artifactId>
+    <packaging>pom</packaging>
+    <description>Feign client interfaces for inter-service communication</description>
+
+    <modules>
+        <module>ecommerce-api-product</module>
+        <module>ecommerce-api-user</module>
+        <module>ecommerce-api-order</module>
+        <module>ecommerce-api-inventory</module>
+    </modules>
+
+</project>
