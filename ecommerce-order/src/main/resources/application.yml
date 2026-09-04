@@ -15,16 +15,16 @@ spring:
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:root123}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
-
-spring-data-redis:
-  host: ${REDIS_HOST:localhost}
-  port: ${REDIS_PORT:6379}
 
 rocketmq:
   name-server: ${ROCKETMQ_ADDR:localhost:9876}
