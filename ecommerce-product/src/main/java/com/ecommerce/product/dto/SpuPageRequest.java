@@ -14,6 +14,8 @@ import java.io.Serializable;
 public class SpuPageRequest implements Serializable {
 
     private Long categoryId;
+    private Long brandId;
+    private Integer status;
     private String keyword;
     private Integer pageNum = 1;
     private Integer pageSize = 10;

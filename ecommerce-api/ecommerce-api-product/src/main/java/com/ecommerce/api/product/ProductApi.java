@@ -1,6 +1,7 @@
 package com.ecommerce.api.product;
 
 import com.ecommerce.api.product.dto.SkuDTO;
+import com.ecommerce.api.product.dto.SpuSimpleDTO;
 import com.ecommerce.common.core.result.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,9 @@ import java.util.List;
 
 @FeignClient(name = "ecommerce-product")
 public interface ProductApi {
+
+    @GetMapping("/product/spu/{spuId}")
+    Result<SpuSimpleDTO> getSpuById(@PathVariable("spuId") Long spuId);
 
     @GetMapping("/product/sku/{skuId}")
     Result<SkuDTO> getSkuById(@PathVariable("skuId") Long skuId);

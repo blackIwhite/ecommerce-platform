@@ -33,20 +33,20 @@ public class ProductController {
     }
 
     @RequireLogin
-    @PostMapping("/spu")
+    @PostMapping("/admin/spu")
     public Result<Long> createSpu(@RequestBody SpuCreateRequest request) {
         return Result.success(spuService.createSpu(request));
     }
 
     @RequireLogin
-    @PutMapping("/spu")
+    @PutMapping("/admin/spu")
     public Result<Void> updateSpu(@RequestBody SpuCreateRequest request) {
         spuService.updateSpu(request);
         return Result.success();
     }
 
     @RequireLogin
-    @PutMapping("/spu/{spuId}/status")
+    @PutMapping("/admin/spu/{spuId}/status")
     public Result<Void> updateStatus(@PathVariable Long spuId, @RequestParam Integer status) {
         spuService.updateStatus(spuId, status);
         return Result.success();

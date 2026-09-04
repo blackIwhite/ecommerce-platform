@@ -24,10 +24,12 @@ public enum ResultCode {
     // User module codes (2xxx)
     USER_NOT_FOUND(2001, "User not found"),
     USER_ALREADY_EXISTS(2002, "User already exists"),
+    ADDRESS_NOT_FOUND(2003, "Address not found"),
 
     // Product module codes (3xxx)
     PRODUCT_NOT_FOUND(3001, "Product not found"),
     PRODUCT_OFF_SHELF(3002, "Product is off shelf"),
+    PRODUCT_ID_REQUIRED(3003, "Product id is required for update"),
 
     // Inventory module codes (4xxx)
     INVENTORY_NOT_ENOUGH(4001, "Inventory not enough"),
@@ -37,7 +39,13 @@ public enum ResultCode {
 
     // Order module codes (5xxx)
     ORDER_NOT_FOUND(5001, "Order not found"),
-    ORDER_STATUS_ERROR(5002, "Order status error");
+    ORDER_STATUS_ERROR(5002, "Order status error"),
+    ORDER_ACCESS_DENIED(5003, "No permission to operate this order"),
+    ORDER_INVENTORY_LOCK_FAILED(5004, "Failed to lock inventory"),
+    ORDER_INVENTORY_UNLOCK_FAILED(5005, "Failed to unlock inventory"),
+    ORDER_INVENTORY_DEDUCT_FAILED(5006, "Failed to deduct inventory"),
+    ORDER_PRODUCT_QUERY_FAILED(5007, "Failed to query product info"),
+    ORDER_ADDRESS_QUERY_FAILED(5008, "Failed to query user address");
 
     private final int code;
     private final String message;

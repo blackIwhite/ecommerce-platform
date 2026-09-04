@@ -1,20 +1,14 @@
 package com.ecommerce.order.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.ecommerce.common.core.page.PageQuery;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
+import lombok.EqualsAndHashCode;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class OrderPageRequest implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class OrderPageRequest extends PageQuery {
 
     private Long userId;
     private Integer status;
-    private Integer pageNum = 1;
-    private Integer pageSize = 10;
+    private String orderNo;
 }

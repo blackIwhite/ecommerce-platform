@@ -3,18 +3,22 @@ package com.ecommerce.user.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ecommerce.common.core.exception.BusinessException;
+import com.ecommerce.common.core.result.ResultCode;
+import com.ecommerce.common.web.context.UserContextHolder;
 import com.ecommerce.user.dto.UserAddressCreateRequest;
 import com.ecommerce.user.dto.UserAddressDTO;
+import com.ecommerce.user.dto.UserAddressUpdateRequest;
 import com.ecommerce.user.entity.UserAddress;
 import com.ecommerce.user.mapper.UserAddressMapper;
 import com.ecommerce.user.service.UserAddressService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserAddressServiceImpl implements UserAddressService {
@@ -28,28 +32,31 @@ public class UserAddressServiceImpl implements UserAddressService {
                 .orderByDesc(UserAddress::getIsDefault)
                 .orderByDesc(UserAddress::getCreateTime);
         List<UserAddress> addresses = userAddressMapper.selectList(wrapper);
-        return addresses.stream().map(this::toAddressDTO).collect(Collectors.toList());
+        return addresses.stream().map(this::toAddressDTO).toList();
     }
 
     @Override
     public UserAddressDTO getAddressById(Long addressId) {
         UserAddress address = userAddressMapper.selectById(addressId);
         if (address == null) {
-            throw new BusinessException("Address not found");
+            throw new BusinessException(ResultCode.ADDRESS_NOT_FOUND);
         }
+        checkOwnership(address);
         return toAddressDTO(address);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createAddress(UserAddressCreateRequest request) {
-        // If setting as default, clear other defaults first
+        Long ownerUserId = UserContextHolder.getUserId() != null
+                ? UserContextHolder.getUserId() : request.getUserId();
+
         if (Integer.valueOf(1).equals(request.getIsDefault())) {
-            clearDefaultAddress(request.getUserId());
+            clearDefaultAddress(ownerUserId);
         }
 
         UserAddress address = UserAddress.builder()
-                .userId(request.getUserId())
+                .userId(ownerUserId)
                 .receiverName(request.getReceiverName())
                 .receiverPhone(request.getReceiverPhone())
                 .province(request.getProvince())
@@ -64,27 +71,15 @@ public class UserAddressServiceImpl implements UserAddressService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateAddress(UserAddressCreateRequest request) {
-        // Expecting addressId to be passed via userId field repurposed or a separate field
-        // In practice, the request would include an addressId. For this implementation,
-        // we use a query by userId + receiverName + receiverPhone as a simple approach.
-        // A proper implementation would have an addressId in the request.
-        // Here we'll query by all fields to find the address to update.
-        LambdaQueryWrapper<UserAddress> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserAddress::getUserId, request.getUserId());
-        if (request.getReceiverPhone() != null) {
-            wrapper.eq(UserAddress::getReceiverPhone, request.getReceiverPhone());
-        }
-        if (request.getDetailAddress() != null) {
-            wrapper.eq(UserAddress::getDetailAddress, request.getDetailAddress());
-        }
-        UserAddress existing = userAddressMapper.selectOne(wrapper);
+    public void updateAddress(UserAddressUpdateRequest request) {
+        UserAddress existing = userAddressMapper.selectById(request.getAddressId());
         if (existing == null) {
-            throw new BusinessException("Address not found");
+            throw new BusinessException(ResultCode.ADDRESS_NOT_FOUND);
         }
+        checkOwnership(existing);
 
         if (Integer.valueOf(1).equals(request.getIsDefault())) {
-            clearDefaultAddress(request.getUserId());
+            clearDefaultAddress(existing.getUserId());
         }
 
         existing.setReceiverName(request.getReceiverName());
@@ -100,12 +95,21 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteAddress(Long addressId) {
         UserAddress address = userAddressMapper.selectById(addressId);
         if (address == null) {
-            throw new BusinessException("Address not found");
+            throw new BusinessException(ResultCode.ADDRESS_NOT_FOUND);
         }
+        checkOwnership(address);
         userAddressMapper.deleteById(addressId);
+    }
+
+    private void checkOwnership(UserAddress address) {
+        Long currentUserId = UserContextHolder.getUserId();
+        if (currentUserId != null && !currentUserId.equals(address.getUserId())) {
+            throw new BusinessException(ResultCode.FORBIDDEN, "Address does not belong to current user");
+        }
     }
 
     private void clearDefaultAddress(Long userId) {

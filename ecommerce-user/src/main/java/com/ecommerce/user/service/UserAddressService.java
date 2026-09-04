@@ -2,6 +2,7 @@ package com.ecommerce.user.service;
 
 import com.ecommerce.user.dto.UserAddressCreateRequest;
 import com.ecommerce.user.dto.UserAddressDTO;
+import com.ecommerce.user.dto.UserAddressUpdateRequest;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface UserAddressService {
 
     Long createAddress(UserAddressCreateRequest request);
 
-    void updateAddress(UserAddressCreateRequest request);
+    void updateAddress(UserAddressUpdateRequest request);
 
     void deleteAddress(Long addressId);
 }
