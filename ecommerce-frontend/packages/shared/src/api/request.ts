@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
+import axios, { type AxiosInstance, type AxiosResponse } from 'axios'
 
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',

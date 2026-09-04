@@ -2,6 +2,7 @@ package com.ecommerce.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.exception.BusinessException;
 import com.ecommerce.common.core.result.ResultCode;
 import com.ecommerce.product.dto.SkuDTO;
@@ -17,16 +18,14 @@ import com.ecommerce.product.mapper.CategoryMapper;
 import com.ecommerce.product.mapper.SkuMapper;
 import com.ecommerce.product.mapper.SpuMapper;
 import com.ecommerce.product.service.SkuService;
+import com.ecommerce.product.service.SpuEsService;
 import com.ecommerce.product.service.SpuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,9 +38,19 @@ public class SpuServiceImpl implements SpuService {
     private final CategoryMapper categoryMapper;
     private final BrandMapper brandMapper;
     private final SkuService skuService;
+    private final SpuEsService spuEsService;
 
     @Override
-    public Page<SpuDTO> pageSpu(SpuPageRequest request) {
+    public PageResult<SpuDTO> pageSpu(SpuPageRequest request) {
+        if (StringUtils.hasText(request.getKeyword())) {
+            PageResult<Long> esResult = spuEsService.searchSpuIds(request);
+            if (esResult.getList().isEmpty()) {
+                return PageResult.of(Collections.emptyList(), esResult.getTotal(), request.getPageNum(), request.getPageSize());
+            }
+            List<SpuDTO> dtoList = fetchBySpuIds(esResult.getList());
+            return PageResult.of(dtoList, esResult.getTotal(), request.getPageNum(), request.getPageSize());
+        }
+
         Page<Spu> page = new Page<>(request.getPageNum(), request.getPageSize());
         LambdaQueryWrapper<Spu> wrapper = new LambdaQueryWrapper<>();
         if (request.getCategoryId() != null) {
@@ -53,17 +62,12 @@ public class SpuServiceImpl implements SpuService {
         if (request.getStatus() != null) {
             wrapper.eq(Spu::getStatus, request.getStatus());
         }
-        if (StringUtils.hasText(request.getKeyword())) {
-            wrapper.like(Spu::getName, request.getKeyword());
-        }
         wrapper.orderByDesc(Spu::getCreateTime);
         Page<Spu> spuPage = spuMapper.selectPage(page, wrapper);
 
         List<SpuDTO> dtoList = enrichSpuDTOList(spuPage.getRecords());
 
-        Page<SpuDTO> resultPage = new Page<>(spuPage.getCurrent(), spuPage.getSize(), spuPage.getTotal());
-        resultPage.setRecords(dtoList);
-        return resultPage;
+        return PageResult.of(dtoList, spuPage.getTotal(), request.getPageNum(), request.getPageSize());
     }
 
     @Override
@@ -103,6 +107,7 @@ public class SpuServiceImpl implements SpuService {
                 skuMapper.insert(sku);
             }
         }
+        spuEsService.indexSpu(spu.getId());
         return spu.getId();
     }
 
@@ -140,6 +145,7 @@ public class SpuServiceImpl implements SpuService {
                 skuMapper.insert(sku);
             }
         }
+        spuEsService.indexSpu(request.getId());
     }
 
     @Override
@@ -150,6 +156,7 @@ public class SpuServiceImpl implements SpuService {
         }
         spu.setStatus(status);
         spuMapper.updateById(spu);
+        spuEsService.indexSpu(spuId);
     }
 
     private List<SpuDTO> enrichSpuDTOList(List<Spu> spuList) {
@@ -188,6 +195,16 @@ public class SpuServiceImpl implements SpuService {
             }
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    private List<SpuDTO> fetchBySpuIds(List<Long> spuIds) {
+        List<Spu> spuList = spuMapper.selectBatchIds(spuIds);
+        Map<Long, Spu> spuMap = spuList.stream().collect(Collectors.toMap(Spu::getId, Function.identity()));
+        List<Spu> ordered = spuIds.stream()
+                .map(spuMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+        return enrichSpuDTOList(ordered);
     }
 
     private SpuDTO toSpuDTO(Spu spu) {

@@ -34,6 +34,12 @@ spring:
             - Path=/api/order/**
           filters:
             - StripPrefix=1
+        - id: cart-service
+          uri: lb://ecommerce-order
+          predicates:
+            - Path=/api/cart/**
+          filters:
+            - StripPrefix=1
         - id: inventory-service
           uri: lb://ecommerce-inventory
           predicates:

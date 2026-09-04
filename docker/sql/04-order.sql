@@ -51,3 +51,16 @@ CREATE TABLE IF NOT EXISTS t_order_status_log (
     deleted TINYINT NOT NULL DEFAULT 0 COMMENT 'Logical delete: 0=not deleted, 1=deleted',
     INDEX idx_order_id (order_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Order status change log';
+
+-- Cart item table
+CREATE TABLE IF NOT EXISTS t_cart_item (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL COMMENT 'User ID',
+    sku_id BIGINT NOT NULL COMMENT 'SKU ID',
+    quantity INT NOT NULL DEFAULT 1 COMMENT 'Quantity',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT 'Logical delete: 0=not deleted, 1=deleted',
+    UNIQUE INDEX uk_user_sku (user_id, sku_id),
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cart item table';

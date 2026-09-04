@@ -3,6 +3,7 @@ package com.ecommerce.product.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ecommerce.common.core.exception.BusinessException;
+import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.result.ResultCode;
 import com.ecommerce.product.dto.SkuDTO;
 import com.ecommerce.product.dto.SpuCreateRequest;
@@ -17,6 +18,7 @@ import com.ecommerce.product.mapper.CategoryMapper;
 import com.ecommerce.product.mapper.SkuMapper;
 import com.ecommerce.product.mapper.SpuMapper;
 import com.ecommerce.product.service.SkuService;
+import com.ecommerce.product.service.SpuEsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +48,8 @@ class SpuServiceImplTest {
     private BrandMapper brandMapper;
     @Mock
     private SkuService skuService;
+    @Mock
+    private SpuEsService spuEsService;
 
     @InjectMocks
     private SpuServiceImpl spuService;
@@ -78,7 +82,9 @@ class SpuServiceImplTest {
     @Test
     void pageSpu_withFilters_shouldReturnEnrichedPage() {
         SpuPageRequest request = SpuPageRequest.builder()
-                .categoryId(10L).brandId(20L).status(1).pageNum(1).pageSize(10).build();
+                .categoryId(10L).brandId(20L).status(1).build();
+        request.setPageNum(1);
+        request.setPageSize(10);
 
         Page<Spu> page = new Page<>(1, 10);
         page.setRecords(List.of(sampleSpu));
@@ -88,36 +94,56 @@ class SpuServiceImplTest {
         when(categoryMapper.selectBatchIds(anyCollection())).thenReturn(List.of(sampleCategory));
         when(brandMapper.selectBatchIds(anyCollection())).thenReturn(List.of(sampleBrand));
 
-        Page<SpuDTO> result = spuService.pageSpu(request);
+        PageResult<SpuDTO> result = spuService.pageSpu(request);
 
         assertEquals(1, result.getTotal());
-        SpuDTO dto = result.getRecords().getFirst();
+        SpuDTO dto = result.getList().getFirst();
         assertEquals("Test Phone", dto.getName());
         assertEquals("Electronics", dto.getCategoryName());
         assertEquals("Apple", dto.getBrandName());
     }
 
     @Test
-    void pageSpu_withKeyword_shouldFilterByName() {
+    void pageSpu_withKeyword_shouldUseEsSearch() {
         SpuPageRequest request = SpuPageRequest.builder()
-                .keyword("Phone").pageNum(1).pageSize(10).build();
+                .keyword("Phone").build();
+        request.setPageNum(1);
+        request.setPageSize(10);
 
-        Page<Spu> page = new Page<>(1, 10);
-        page.setRecords(List.of(sampleSpu));
-        page.setTotal(1);
-
-        when(spuMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(page);
+        when(spuEsService.searchSpuIds(any(SpuPageRequest.class)))
+                .thenReturn(PageResult.of(List.of(1L), 1, 1, 10));
+        when(spuMapper.selectBatchIds(List.of(1L))).thenReturn(List.of(sampleSpu));
         when(categoryMapper.selectBatchIds(anyCollection())).thenReturn(List.of(sampleCategory));
         when(brandMapper.selectBatchIds(anyCollection())).thenReturn(List.of(sampleBrand));
 
-        Page<SpuDTO> result = spuService.pageSpu(request);
+        PageResult<SpuDTO> result = spuService.pageSpu(request);
 
-        assertEquals(1, result.getRecords().size());
+        assertEquals(1, result.getTotal());
+        assertEquals("Test Phone", result.getList().getFirst().getName());
+        verify(spuEsService).searchSpuIds(any(SpuPageRequest.class));
+        verify(spuMapper).selectBatchIds(List.of(1L));
+    }
+
+    @Test
+    void pageSpu_withKeyword_emptyEsResult_shouldReturnEmpty() {
+        SpuPageRequest request = SpuPageRequest.builder()
+                .keyword("NonExistent").build();
+        request.setPageNum(1);
+        request.setPageSize(10);
+
+        when(spuEsService.searchSpuIds(any(SpuPageRequest.class)))
+                .thenReturn(PageResult.of(Collections.emptyList(), 0L, 1, 10));
+
+        PageResult<SpuDTO> result = spuService.pageSpu(request);
+
+        assertEquals(0, result.getTotal());
+        assertTrue(result.getList().isEmpty());
+        verify(spuMapper, never()).selectBatchIds(anyCollection());
     }
 
     @Test
     void pageSpu_emptyResult_shouldReturnEmptyPage() {
-        SpuPageRequest request = SpuPageRequest.builder().pageNum(1).pageSize(10).build();
+        SpuPageRequest request = SpuPageRequest.builder().build();
 
         Page<Spu> page = new Page<>(1, 10);
         page.setRecords(Collections.emptyList());
@@ -125,10 +151,10 @@ class SpuServiceImplTest {
 
         when(spuMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(page);
 
-        Page<SpuDTO> result = spuService.pageSpu(request);
+        PageResult<SpuDTO> result = spuService.pageSpu(request);
 
         assertEquals(0, result.getTotal());
-        assertTrue(result.getRecords().isEmpty());
+        assertTrue(result.getList().isEmpty());
         verify(categoryMapper, never()).selectBatchIds(anyCollection());
         verify(brandMapper, never()).selectBatchIds(anyCollection());
     }
@@ -189,6 +215,7 @@ class SpuServiceImplTest {
         assertEquals(1L, id);
         verify(spuMapper).insert(any(Spu.class));
         verify(skuMapper).insert(any(Sku.class));
+        verify(spuEsService).indexSpu(1L);
     }
 
     @Test
@@ -250,6 +277,7 @@ class SpuServiceImplTest {
         verify(spuMapper).updateById(any(Spu.class));
         verify(skuMapper).delete(any(LambdaQueryWrapper.class));
         verify(skuMapper).insert(any(Sku.class));
+        verify(spuEsService).indexSpu(1L);
     }
 
     // ---- updateStatus ----
@@ -264,6 +292,7 @@ class SpuServiceImplTest {
         ArgumentCaptor<Spu> captor = ArgumentCaptor.forClass(Spu.class);
         verify(spuMapper).updateById(captor.capture());
         assertEquals(2, captor.getValue().getStatus());
+        verify(spuEsService).indexSpu(1L);
     }
 
     @Test

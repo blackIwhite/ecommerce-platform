@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { getToken } from '@ecommerce/shared'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -42,6 +43,14 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+const authRoutes = ['/cart', '/order', '/user']
+
+router.beforeEach((to) => {
+  if (authRoutes.some((r) => to.path.startsWith(r)) && !getToken()) {
+    return '/login'
+  }
 })
 
 export default router

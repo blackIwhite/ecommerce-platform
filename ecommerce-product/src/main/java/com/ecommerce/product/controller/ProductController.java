@@ -1,6 +1,6 @@
 package com.ecommerce.product.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.result.Result;
 import com.ecommerce.product.dto.SkuDTO;
 import com.ecommerce.product.dto.SpuCreateRequest;
@@ -8,6 +8,7 @@ import com.ecommerce.product.dto.SpuDTO;
 import com.ecommerce.product.dto.SpuPageRequest;
 import com.ecommerce.common.web.annotation.RequireLogin;
 import com.ecommerce.product.service.SkuService;
+import com.ecommerce.product.service.SpuEsService;
 import com.ecommerce.product.service.SpuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +22,10 @@ public class ProductController {
 
     private final SpuService spuService;
     private final SkuService skuService;
+    private final SpuEsService spuEsService;
 
     @GetMapping("/spu/page")
-    public Result<Page<SpuDTO>> pageSpu(SpuPageRequest request) {
+    public Result<PageResult<SpuDTO>> pageSpu(SpuPageRequest request) {
         return Result.success(spuService.pageSpu(request));
     }
 
@@ -60,5 +62,12 @@ public class ProductController {
     @GetMapping("/sku/list")
     public Result<List<SkuDTO>> getSkuListByIds(@RequestParam List<Long> skuIds) {
         return Result.success(skuService.getSkuListByIds(skuIds));
+    }
+
+    @RequireLogin
+    @PostMapping("/admin/spu/reindex")
+    public Result<Void> reindexAll() {
+        spuEsService.reindexAll();
+        return Result.success();
     }
 }

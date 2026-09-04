@@ -30,11 +30,33 @@ export interface SpuDTO {
   spuId: number
   name: string
   categoryId: number
+  categoryName: string
   brandId: number
+  brandName: string
   description: string
   images: string
   status: number
+  createTime: string
   skuList?: SkuDTO[]
+}
+
+export interface CategoryDTO {
+  id: number
+  name: string
+  parentId: number
+  level: number
+  sort: number
+  icon: string
+  status: number
+  children?: CategoryDTO[]
+}
+
+export interface BrandDTO {
+  id: number
+  name: string
+  logo: string
+  description: string
+  status: number
 }
 
 export interface UserDTO {
@@ -42,6 +64,8 @@ export interface UserDTO {
   phone: string
   nickname: string
   avatar: string
+  status: number
+  createTime: string
 }
 
 export interface UserAddressDTO {
@@ -62,13 +86,15 @@ export interface OrderDTO {
   userId: number
   totalAmount: number
   status: number
+  receiverName: string
+  receiverPhone: string
+  receiverAddress: string
+  remark: string
   createTime: string
-  orderItems?: OrderItemDTO[]
+  items?: OrderItemDTO[]
 }
 
 export interface OrderItemDTO {
-  orderItemId: number
-  orderId: number
   skuId: number
   skuName: string
   price: number
