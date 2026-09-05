@@ -18,6 +18,7 @@ public final class MqConstants {
     public static final String ORDER_CANCEL_QUEUE = "order.queue.cancel";
     public static final String ORDER_PAY_SUCCESS_QUEUE = "order.queue.pay-success";
     public static final String ORDER_CLOSE_QUEUE = "order.queue.close";
+    public static final String ORDER_CLOSE_DELAY_QUEUE = "order.queue.close.delay";
 
     // ---- Inventory queues ----
 

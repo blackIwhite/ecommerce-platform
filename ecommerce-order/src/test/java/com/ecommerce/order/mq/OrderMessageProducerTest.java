@@ -46,14 +46,12 @@ class OrderMessageProducerTest {
     }
 
     @Test
-    void sendDelayAutoCancel_shouldSendWithDelay() {
+    void sendDelayAutoCancel_shouldSendToDelayQueue() {
         producer.sendDelayAutoCancel(sampleMessage());
 
         verify(rabbitTemplate).convertAndSend(
-                eq(MqConstants.ORDER_EXCHANGE),
-                eq(MqConstants.ORDER_CLOSE_KEY),
-                any(OrderMessage.class),
-                any(org.springframework.amqp.core.MessagePostProcessor.class));
+                eq(MqConstants.ORDER_CLOSE_DELAY_QUEUE),
+                any(OrderMessage.class));
     }
 
     @Test

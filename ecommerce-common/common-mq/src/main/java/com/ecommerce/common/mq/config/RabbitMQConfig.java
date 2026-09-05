@@ -7,8 +7,6 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Map;
-
 @Configuration
 public class RabbitMQConfig {
 
@@ -17,12 +15,11 @@ public class RabbitMQConfig {
         return new Jackson2JsonMessageConverter();
     }
 
-    // ---- Order exchange (delayed) ----
+    // ---- Order exchange ----
 
     @Bean
-    public CustomExchange orderExchange() {
-        return new CustomExchange(MqConstants.ORDER_EXCHANGE, "x-delayed-message", true, false,
-                Map.of("x-delayed-type", "direct"));
+    public DirectExchange orderExchange() {
+        return new DirectExchange(MqConstants.ORDER_EXCHANGE, true, false);
     }
 
     // ---- Order queues ----
@@ -47,25 +44,34 @@ public class RabbitMQConfig {
         return QueueBuilder.durable(MqConstants.ORDER_CLOSE_QUEUE).build();
     }
 
+    @Bean
+    public Queue orderCloseDelayQueue() {
+        return QueueBuilder.durable(MqConstants.ORDER_CLOSE_DELAY_QUEUE)
+                .withArgument("x-message-ttl", MqConstants.DELAY_ORDER_CANCEL_MS)
+                .withArgument("x-dead-letter-exchange", MqConstants.ORDER_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", MqConstants.ORDER_CLOSE_KEY)
+                .build();
+    }
+
     // ---- Order bindings ----
 
     @Bean
     public Binding orderCreateBinding() {
-        return BindingBuilder.bind(orderCreateQueue()).to(orderExchange()).with(MqConstants.ORDER_CREATE_KEY).noargs();
+        return BindingBuilder.bind(orderCreateQueue()).to(orderExchange()).with(MqConstants.ORDER_CREATE_KEY);
     }
 
     @Bean
     public Binding orderCancelBinding() {
-        return BindingBuilder.bind(orderCancelQueue()).to(orderExchange()).with(MqConstants.ORDER_CANCEL_KEY).noargs();
+        return BindingBuilder.bind(orderCancelQueue()).to(orderExchange()).with(MqConstants.ORDER_CANCEL_KEY);
     }
 
     @Bean
     public Binding orderPaySuccessBinding() {
-        return BindingBuilder.bind(orderPaySuccessQueue()).to(orderExchange()).with(MqConstants.ORDER_PAY_SUCCESS_KEY).noargs();
+        return BindingBuilder.bind(orderPaySuccessQueue()).to(orderExchange()).with(MqConstants.ORDER_PAY_SUCCESS_KEY);
     }
 
     @Bean
     public Binding orderCloseBinding() {
-        return BindingBuilder.bind(orderCloseQueue()).to(orderExchange()).with(MqConstants.ORDER_CLOSE_KEY).noargs();
+        return BindingBuilder.bind(orderCloseQueue()).to(orderExchange()).with(MqConstants.ORDER_CLOSE_KEY);
     }
 }
