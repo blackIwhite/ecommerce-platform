@@ -41,14 +41,14 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     private static final String TOKEN_BLACKLIST_PREFIX = "auth:blacklist:";
 
     private static final List<String> WHITE_LIST = List.of(
-            "/api/auth/login",
-            "/api/auth/register",
-            "/api/auth/refresh",
-            "/api/auth/sms/**",
-            "/api/product/spu/**",
-            "/api/product/sku/**",
-            "/api/product/category/tree",
-            "/api/product/brand/list"
+            "/api/auth/auth/login",
+            "/api/auth/auth/register",
+            "/api/auth/auth/refresh",
+            "/api/auth/auth/sms/**",
+            "/api/product/product/spu/**",
+            "/api/product/product/sku/**",
+            "/api/product/product/category/tree",
+            "/api/product/product/brand/list"
     );
 
     @Override
