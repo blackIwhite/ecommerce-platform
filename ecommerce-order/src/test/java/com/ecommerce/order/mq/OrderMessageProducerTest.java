@@ -2,14 +2,13 @@ package com.ecommerce.order.mq;
 
 import com.ecommerce.common.mq.constant.MqConstants;
 import com.ecommerce.common.mq.message.OrderMessage;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.Message;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,7 +22,7 @@ import static org.mockito.Mockito.*;
 class OrderMessageProducerTest {
 
     @Mock
-    private RocketMQTemplate rocketMQTemplate;
+    private RabbitTemplate rabbitTemplate;
 
     @InjectMocks
     private OrderMessageProducer producer;
@@ -37,36 +36,40 @@ class OrderMessageProducerTest {
     }
 
     @Test
-    void sendOrderCreated_shouldSendToCreateTopic() {
+    void sendOrderCreated_shouldSendToOrderExchange() {
         producer.sendOrderCreated(sampleMessage());
 
-        ArgumentCaptor<Message<OrderMessage>> captor = ArgumentCaptor.forClass(Message.class);
-        verify(rocketMQTemplate).syncSend(eq(MqConstants.ORDER_CREATE_TOPIC), captor.capture());
-        assertEquals("1", captor.getValue().getHeaders().get("KEYS"));
+        verify(rabbitTemplate).convertAndSend(
+                eq(MqConstants.ORDER_EXCHANGE),
+                eq(MqConstants.ORDER_CREATE_KEY),
+                any(OrderMessage.class));
     }
 
     @Test
-    void sendDelayAutoCancel_shouldUseDelayLevel() {
+    void sendDelayAutoCancel_shouldSendWithDelay() {
         producer.sendDelayAutoCancel(sampleMessage());
 
-        verify(rocketMQTemplate).syncSend(
-                eq(MqConstants.ORDER_CLOSE_TOPIC),
-                any(Message.class),
-                eq(3000L),
-                eq(MqConstants.DELAY_LEVEL_ORDER_CANCEL));
+        verify(rabbitTemplate).convertAndSend(
+                eq(MqConstants.ORDER_EXCHANGE),
+                eq(MqConstants.ORDER_CLOSE_KEY),
+                any(OrderMessage.class),
+                any(org.springframework.amqp.core.MessagePostProcessor.class));
     }
 
     @Test
-    void sendOrderPaySuccess_shouldSendToPayTopic() {
+    void sendOrderPaySuccess_shouldSendToPaySuccessKey() {
         producer.sendOrderPaySuccess(sampleMessage());
 
-        verify(rocketMQTemplate).syncSend(eq(MqConstants.ORDER_PAY_SUCCESS_TOPIC), any(Message.class));
+        verify(rabbitTemplate).convertAndSend(
+                eq(MqConstants.ORDER_EXCHANGE),
+                eq(MqConstants.ORDER_PAY_SUCCESS_KEY),
+                any(OrderMessage.class));
     }
 
     @Test
     void doSend_exception_shouldNotPropagate() {
-        doThrow(new RuntimeException("broker down"))
-                .when(rocketMQTemplate).syncSend(anyString(), any(Message.class));
+        doThrow(new AmqpException("broker down") {})
+                .when(rabbitTemplate).convertAndSend(anyString(), anyString(), any(OrderMessage.class));
 
         assertDoesNotThrow(() -> producer.sendOrderCreated(sampleMessage()));
     }

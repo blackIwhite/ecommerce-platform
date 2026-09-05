@@ -36,7 +36,6 @@ import com.ecommerce.order.mq.OrderMessageProducer;
 import com.ecommerce.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -62,8 +61,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserApi userApi;
     private final InventoryApi inventoryApi;
     private final RedisUtils redisUtils;
-    @Autowired(required = false)
-    private OrderMessageProducer orderMessageProducer;
+    private final OrderMessageProducer orderMessageProducer;
 
     private static final String ORDER_NO_SEQ_KEY_PREFIX = "order:no:seq:";
 
@@ -169,11 +167,9 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCode.ORDER_INVENTORY_LOCK_FAILED);
         }
 
-        if (orderMessageProducer != null) {
-            OrderMessage msg = orderMessageProducer.buildMessage(order, orderItems, null);
-            orderMessageProducer.sendOrderCreated(msg);
-            orderMessageProducer.sendDelayAutoCancel(msg);
-        }
+        OrderMessage msg = orderMessageProducer.buildMessage(order, orderItems, null);
+        orderMessageProducer.sendOrderCreated(msg);
+        orderMessageProducer.sendDelayAutoCancel(msg);
 
         return order.getId();
     }
@@ -269,10 +265,8 @@ public class OrderServiceImpl implements OrderService {
         LambdaQueryWrapper<OrderItem> itemWrapper = new LambdaQueryWrapper<>();
         itemWrapper.eq(OrderItem::getOrderId, orderId);
         List<OrderItem> items = orderItemMapper.selectList(itemWrapper);
-        if (orderMessageProducer != null) {
-            OrderMessage msg = orderMessageProducer.buildMessage(order, items, null);
-            orderMessageProducer.sendOrderPaySuccess(msg);
-        }
+        OrderMessage msg = orderMessageProducer.buildMessage(order, items, null);
+        orderMessageProducer.sendOrderPaySuccess(msg);
     }
 
     @Override
@@ -340,10 +334,8 @@ public class OrderServiceImpl implements OrderService {
         LambdaQueryWrapper<OrderItem> itemWrapper = new LambdaQueryWrapper<>();
         itemWrapper.eq(OrderItem::getOrderId, order.getId());
         List<OrderItem> items = orderItemMapper.selectList(itemWrapper);
-        if (orderMessageProducer != null) {
-            OrderMessage msg = orderMessageProducer.buildMessage(order, items, reason);
-            orderMessageProducer.sendOrderCancelled(msg);
-        }
+        OrderMessage msg = orderMessageProducer.buildMessage(order, items, reason);
+        orderMessageProducer.sendOrderCancelled(msg);
     }
 
     private void checkOwnership(Order order) {

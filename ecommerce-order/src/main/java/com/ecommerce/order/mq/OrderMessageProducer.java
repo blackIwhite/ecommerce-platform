@@ -6,11 +6,9 @@ import com.ecommerce.order.entity.Order;
 import com.ecommerce.order.entity.OrderItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
-import org.apache.rocketmq.spring.support.RocketMQHeaders;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -21,25 +19,24 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true")
 public class OrderMessageProducer {
 
-    private final RocketMQTemplate rocketMQTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     public void sendOrderCreated(OrderMessage msg) {
-        sendAfterCommit(MqConstants.ORDER_CREATE_TOPIC, msg, 0);
+        sendAfterCommit(MqConstants.ORDER_EXCHANGE, MqConstants.ORDER_CREATE_KEY, msg, 0);
     }
 
     public void sendOrderCancelled(OrderMessage msg) {
-        sendAfterCommit(MqConstants.ORDER_CANCEL_TOPIC, msg, 0);
+        sendAfterCommit(MqConstants.ORDER_EXCHANGE, MqConstants.ORDER_CANCEL_KEY, msg, 0);
     }
 
     public void sendOrderPaySuccess(OrderMessage msg) {
-        sendAfterCommit(MqConstants.ORDER_PAY_SUCCESS_TOPIC, msg, 0);
+        sendAfterCommit(MqConstants.ORDER_EXCHANGE, MqConstants.ORDER_PAY_SUCCESS_KEY, msg, 0);
     }
 
     public void sendDelayAutoCancel(OrderMessage msg) {
-        sendAfterCommit(MqConstants.ORDER_CLOSE_TOPIC, msg, MqConstants.DELAY_LEVEL_ORDER_CANCEL);
+        sendAfterCommit(MqConstants.ORDER_EXCHANGE, MqConstants.ORDER_CLOSE_KEY, msg, MqConstants.DELAY_ORDER_CANCEL_MS);
     }
 
     public OrderMessage buildMessage(Order order, List<OrderItem> items, String cancelReason) {
@@ -55,32 +52,33 @@ public class OrderMessageProducer {
                 .build();
     }
 
-    private void sendAfterCommit(String topic, OrderMessage msg, int delayLevel) {
+    private void sendAfterCommit(String exchange, String routingKey, OrderMessage msg, long delayMs) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    doSend(topic, msg, delayLevel);
+                    doSend(exchange, routingKey, msg, delayMs);
                 }
             });
         } else {
-            doSend(topic, msg, delayLevel);
+            doSend(exchange, routingKey, msg, delayMs);
         }
     }
 
-    private void doSend(String topic, OrderMessage msg, int delayLevel) {
+    private void doSend(String exchange, String routingKey, OrderMessage msg, long delayMs) {
         try {
-            Message<OrderMessage> message = MessageBuilder.withPayload(msg)
-                    .setHeader(RocketMQHeaders.KEYS, String.valueOf(msg.getOrderId()))
-                    .build();
-            if (delayLevel > 0) {
-                rocketMQTemplate.syncSend(topic, message, 3000, delayLevel);
+            MessagePostProcessor postProcessor = message -> {
+                message.getMessageProperties().setHeader("x-delay", delayMs);
+                return message;
+            };
+            if (delayMs > 0) {
+                rabbitTemplate.convertAndSend(exchange, routingKey, msg, postProcessor);
             } else {
-                rocketMQTemplate.syncSend(topic, message);
+                rabbitTemplate.convertAndSend(exchange, routingKey, msg);
             }
-            log.info("Sent MQ message, topic={}, orderId={}", topic, msg.getOrderId());
-        } catch (Exception e) {
-            log.error("Failed to send MQ message, topic={}, orderId={}", topic, msg.getOrderId(), e);
+            log.info("Sent MQ message, exchange={}, routingKey={}, orderId={}", exchange, routingKey, msg.getOrderId());
+        } catch (AmqpException e) {
+            log.error("Failed to send MQ message, exchange={}, routingKey={}, orderId={}", exchange, routingKey, msg.getOrderId(), e);
         }
     }
 }

@@ -1,47 +1,43 @@
 package com.ecommerce.common.mq.constant;
 
-/**
- * RocketMQ topic and consumer group constants.
- */
 public final class MqConstants {
 
     private MqConstants() {
     }
 
-    // ---- Order topics ----
+    // ---- Exchanges ----
 
-    public static final String ORDER_CREATE_TOPIC = "order-create-topic";
-    public static final String ORDER_CANCEL_TOPIC = "order-cancel-topic";
-    public static final String ORDER_PAY_SUCCESS_TOPIC = "order-pay-success-topic";
-    public static final String ORDER_CLOSE_TOPIC = "order-close-topic";
+    public static final String ORDER_EXCHANGE = "order.exchange";
+    public static final String INVENTORY_EXCHANGE = "inventory.exchange";
+    public static final String PAYMENT_EXCHANGE = "payment.exchange";
+    public static final String NOTIFY_EXCHANGE = "notify.exchange";
 
-    // ---- Inventory topics ----
+    // ---- Order queues ----
 
-    public static final String INVENTORY_LOCK_TOPIC = "inventory-lock-topic";
-    public static final String INVENTORY_UNLOCK_TOPIC = "inventory-unlock-topic";
-    public static final String INVENTORY_DEDUCT_TOPIC = "inventory-deduct-topic";
+    public static final String ORDER_CREATE_QUEUE = "order.queue.create";
+    public static final String ORDER_CANCEL_QUEUE = "order.queue.cancel";
+    public static final String ORDER_PAY_SUCCESS_QUEUE = "order.queue.pay-success";
+    public static final String ORDER_CLOSE_QUEUE = "order.queue.close";
 
-    // ---- Payment topics ----
+    // ---- Inventory queues ----
 
-    public static final String PAYMENT_SUCCESS_TOPIC = "payment-success-topic";
-    public static final String PAYMENT_REFUND_TOPIC = "payment-refund-topic";
+    public static final String INVENTORY_LOCK_QUEUE = "inventory.queue.lock";
+    public static final String INVENTORY_UNLOCK_QUEUE = "inventory.queue.unlock";
+    public static final String INVENTORY_DEDUCT_QUEUE = "inventory.queue.deduct";
 
-    // ---- Notification topics ----
+    // ---- Routing keys ----
 
-    public static final String NOTIFY_ORDER_TOPIC = "notify-order-topic";
+    public static final String ORDER_CREATE_KEY = "order.create";
+    public static final String ORDER_CANCEL_KEY = "order.cancel";
+    public static final String ORDER_PAY_SUCCESS_KEY = "order.pay-success";
+    public static final String ORDER_CLOSE_KEY = "order.close";
 
-    // ---- Consumer groups ----
+    public static final String INVENTORY_LOCK_KEY = "inventory.lock";
+    public static final String INVENTORY_UNLOCK_KEY = "inventory.unlock";
+    public static final String INVENTORY_DEDUCT_KEY = "inventory.deduct";
 
-    public static final String ORDER_CONSUMER_GROUP = "order-consumer-group";
-    public static final String INVENTORY_CONSUMER_GROUP = "inventory-consumer-group";
-    public static final String PAYMENT_CONSUMER_GROUP = "payment-consumer-group";
-    public static final String NOTIFY_CONSUMER_GROUP = "notify-consumer-group";
+    // ---- Delay (milliseconds) ----
 
-    // ---- Delay levels (RocketMQ built-in) ----
-
-    /** 30 minutes delay for order auto-cancel. */
-    public static final int DELAY_LEVEL_ORDER_CANCEL = 16;
-
-    /** 5 minutes delay. */
-    public static final int DELAY_LEVEL_5_MIN = 9;
+    public static final long DELAY_ORDER_CANCEL_MS = 30 * 60 * 1000L;
+    public static final long DELAY_5_MIN_MS = 5 * 60 * 1000L;
 }
