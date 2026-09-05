@@ -8,6 +8,10 @@ spring:
     nacos:
       discovery:
         server-addr: ${NACOS_ADDR:localhost:8848}
+      config:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+        import-check:
+          enabled: false
     gateway:
       routes:
         - id: auth-service
