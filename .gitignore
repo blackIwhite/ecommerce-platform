@@ -22,6 +22,10 @@ dist/
 .npm
 *.tsbuildinfo
 
+# pnpm workspace — ignore stray npm/yarn lockfiles
+package-lock.json
+yarn.lock
+
 # Logs
 *.log
 logs/
