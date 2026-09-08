@@ -5,12 +5,14 @@ import com.ecommerce.common.core.annotation.AuditLog;
 import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.result.Result;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/aftersales/admin")
+@Tag(name = "售后管理(后台)", description = "Aftersales admin APIs")
 @RequiredArgsConstructor
 public class AftersalesAdminController {
 

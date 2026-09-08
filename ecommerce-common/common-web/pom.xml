@@ -18,6 +18,14 @@
             <groupId>com.ecommerce</groupId>
             <artifactId>common-core</artifactId>
         </dependency>
+        <!-- Optional: only needed by AuditLogAspect to publish audit events to RabbitMQ.
+             Marked optional so AMQP autoconfiguration is NOT forced onto consumers of
+             common-web that have no RabbitMQ (aspect falls back to structured logging). -->
+        <dependency>
+            <groupId>com.ecommerce</groupId>
+            <artifactId>common-mq</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

@@ -7,6 +7,7 @@ import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.result.Result;
 import com.ecommerce.common.web.annotation.RequireLogin;
 import com.ecommerce.marketing.service.CouponService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/marketing")
 @RequiredArgsConstructor
+@Tag(name = "优惠券管理", description = "Coupon management APIs")
 public class CouponController {
 
     private final CouponService couponService;

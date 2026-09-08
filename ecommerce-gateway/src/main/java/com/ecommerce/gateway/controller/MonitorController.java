@@ -1,6 +1,7 @@
 package com.ecommerce.gateway.controller;
 
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -17,6 +18,7 @@ import java.util.*;
 @Slf4j
 @RestController
 @RequestMapping("/api/monitor")
+@Tag(name = "服务监控", description = "Service monitoring APIs")
 @RequiredArgsConstructor
 public class MonitorController {
 

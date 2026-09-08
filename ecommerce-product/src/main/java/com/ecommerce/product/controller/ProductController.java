@@ -13,6 +13,7 @@ import com.ecommerce.common.web.annotation.RequireLogin;
 import com.ecommerce.product.service.SkuService;
 import com.ecommerce.product.service.SpuEsService;
 import com.ecommerce.product.service.SpuService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/product")
 @RequiredArgsConstructor
+@Tag(name = "商品管理", description = "Product management APIs")
 public class ProductController {
 
     private final SpuService spuService;

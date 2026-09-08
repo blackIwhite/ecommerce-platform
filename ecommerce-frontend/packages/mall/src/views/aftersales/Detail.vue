@@ -92,14 +92,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { aftersalesApi } from '@ecommerce/shared'
 import type { AftersalesOrderDTO } from '@ecommerce/shared'
 
 const route = useRoute()
-const router = useRouter()
 const loading = ref(false)
 const detail = ref<AftersalesOrderDTO | null>(null)
 const showTrackingDialog = ref(false)

@@ -95,4 +95,25 @@ public class RabbitMQConfig {
     public Binding pointsEarnBinding() {
         return BindingBuilder.bind(pointsEarnQueue()).to(marketingExchange()).with(MqConstants.POINTS_EARN_KEY);
     }
+
+    // ---- Audit exchange ----
+
+    @Bean
+    public DirectExchange auditExchange() {
+        return new DirectExchange(MqConstants.AUDIT_EXCHANGE, true, false);
+    }
+
+    // ---- Audit queues ----
+
+    @Bean
+    public Queue auditQueue() {
+        return QueueBuilder.durable(MqConstants.AUDIT_QUEUE).build();
+    }
+
+    // ---- Audit bindings ----
+
+    @Bean
+    public Binding auditBinding() {
+        return BindingBuilder.bind(auditQueue()).to(auditExchange()).with(MqConstants.AUDIT_ROUTING_KEY);
+    }
 }

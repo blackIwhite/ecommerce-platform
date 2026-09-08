@@ -6,6 +6,7 @@ import com.ecommerce.api.inventory.InventoryApi;
 import com.ecommerce.api.inventory.dto.InventoryDeductRequest;
 import com.ecommerce.api.inventory.dto.InventoryLockRequest;
 import com.ecommerce.api.inventory.dto.InventoryUnlockRequest;
+import com.ecommerce.api.marketing.MarketingApi;
 import com.ecommerce.api.product.ProductApi;
 import com.ecommerce.api.product.dto.SkuDTO;
 import com.ecommerce.api.user.UserApi;
@@ -30,6 +31,9 @@ import com.ecommerce.order.mapper.OrderItemMapper;
 import com.ecommerce.order.mapper.OrderMapper;
 import com.ecommerce.order.mapper.OrderStatusLogMapper;
 import com.ecommerce.order.mq.OrderMessageProducer;
+import com.ecommerce.order.service.PaymentService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,6 +62,12 @@ class OrderServiceImplTest {
     @Mock private InventoryApi inventoryApi;
     @Mock private RedisUtils redisUtils;
     @Mock private OrderMessageProducer orderMessageProducer;
+    @Mock private PaymentService paymentService;
+    @Mock private MarketingApi marketingApi;
+    @Mock private Counter orderCreatedCounter;
+    @Mock private Counter orderPaidCounter;
+    @Mock private Counter orderCancelledCounter;
+    @Mock private Timer orderProcessingTimer;
 
     @InjectMocks
     private OrderServiceImpl orderService;

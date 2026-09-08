@@ -11,6 +11,7 @@ import com.ecommerce.inventory.dto.StockAdjustRequest;
 import com.ecommerce.inventory.dto.StockBatchSetRequest;
 import com.ecommerce.inventory.dto.StockSetRequest;
 import com.ecommerce.inventory.service.InventoryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/inventory/admin")
 @RequiredArgsConstructor
 @RequireLogin
+@Tag(name = "库存管理(后台)", description = "Inventory admin APIs")
 public class InventoryAdminController {
 
     private final InventoryService inventoryService;

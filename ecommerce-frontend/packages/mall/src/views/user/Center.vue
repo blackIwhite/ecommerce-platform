@@ -9,6 +9,9 @@
       <router-link to="/points" class="quick-link">积分中心</router-link>
       <router-link to="/aftersales" class="quick-link">售后服务</router-link>
       <router-link to="/ticket" class="quick-link">服务工单</router-link>
+      <router-link to="/messages" class="quick-link">消息中心</router-link>
+      <router-link to="/invoices" class="quick-link">我的发票</router-link>
+      <router-link to="/browse-history" class="quick-link">浏览历史</router-link>
     </div>
 
     <el-tabs v-model="activeTab">

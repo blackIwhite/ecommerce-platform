@@ -1,0 +1,53 @@
+# Frontend CI: installs the pnpm workspace under ecommerce-frontend/ and builds both
+# apps (admin + mall) with vue-tsc type checking. Triggered on pushes and pull
+# requests that touch frontend files. The test step is guarded with --if-present so
+# the workflow passes until vitest tests are added to the root package.json.
+# pnpm 9 is pinned (matches pnpm-lock.yaml lockfileVersion 9.0). No external/paid
+# services required.
+
+name: Frontend CI
+
+on:
+  push:
+    paths:
+      - 'ecommerce-frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    paths:
+      - 'ecommerce-frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+
+jobs:
+  build:
+    name: Build (pnpm + Node 20)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ecommerce-frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: ecommerce-frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build admin app
+        run: pnpm build:admin
+
+      - name: Build mall app
+        run: pnpm build:mall
+
+      - name: Run tests (if a test script exists)
+        run: pnpm -w run test --if-present -- --run

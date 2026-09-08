@@ -7,6 +7,7 @@ import com.ecommerce.product.dto.ReviewCreateRequest;
 import com.ecommerce.product.dto.ReviewDTO;
 import com.ecommerce.product.dto.ReviewStatsDTO;
 import com.ecommerce.product.service.ReviewService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/product")
 @RequiredArgsConstructor
+@Tag(name = "商品评价", description = "Product review APIs")
 public class ReviewController {
 
     private final ReviewService reviewService;

@@ -18,6 +18,9 @@ service.interceptors.request.use(
 
 service.interceptors.response.use(
   (response: AxiosResponse) => {
+    if (response.config.responseType === 'blob') {
+      return response.data
+    }
     const { code, message, data } = response.data
     if (code === 200) {
       return data
@@ -46,3 +49,13 @@ export const put = <T>(url: string, data?: any): Promise<T> =>
 
 export const del = <T>(url: string, params?: any): Promise<T> =>
   service.delete(url, { params }) as any
+
+export const download = async (url: string, params?: any, filename?: string): Promise<void> => {
+  const response = await service.get(url, { params, responseType: 'blob' }) as unknown as Blob
+  const blob = response instanceof Blob ? response : new Blob([response as any])
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = filename || 'download.xlsx'
+  link.click()
+  URL.revokeObjectURL(link.href)
+}

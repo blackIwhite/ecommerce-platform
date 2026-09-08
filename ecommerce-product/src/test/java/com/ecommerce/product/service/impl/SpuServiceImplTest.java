@@ -271,10 +271,19 @@ class SpuServiceImplTest {
         when(spuMapper.updateById(any(Spu.class))).thenReturn(1);
         when(skuMapper.delete(any(LambdaQueryWrapper.class))).thenReturn(1);
         when(skuMapper.insert(any(Sku.class))).thenReturn(1);
+        when(skuMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(List.of(Sku.builder()
+                        .spuId(1L).skuName("256GB")
+                        .price(new BigDecimal("1099")).stock(50).build()));
 
         spuService.updateSpu(request);
 
-        verify(spuMapper).updateById(any(Spu.class));
+        // updateById is invoked twice: once for the SPU field update, once inside
+        // syncMinPrice which re-reads the SKU list and persists the new minPrice.
+        ArgumentCaptor<Spu> spuCaptor = ArgumentCaptor.forClass(Spu.class);
+        verify(spuMapper, times(2)).updateById(spuCaptor.capture());
+        assertEquals("Updated Phone", spuCaptor.getValue().getName());
+        assertEquals(new BigDecimal("1099"), spuCaptor.getValue().getMinPrice());
         verify(skuMapper).delete(any(LambdaQueryWrapper.class));
         verify(skuMapper).insert(any(Sku.class));
         verify(spuEsService).indexSpu(1L);

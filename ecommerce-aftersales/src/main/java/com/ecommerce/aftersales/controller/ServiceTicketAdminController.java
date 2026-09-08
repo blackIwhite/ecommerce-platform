@@ -4,6 +4,7 @@ import com.ecommerce.aftersales.service.ServiceTicketService;
 import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.result.Result;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/ticket/admin")
+@Tag(name = "服务工单(后台)", description = "Service ticket admin APIs")
 @RequiredArgsConstructor
 public class ServiceTicketAdminController {
 

@@ -14,6 +14,7 @@ import com.ecommerce.order.dto.LogisticsTraceDTO;
 import com.ecommerce.order.dto.PaymentDTO;
 import com.ecommerce.order.service.OrderService;
 import com.ecommerce.order.service.PaymentService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/order")
 @RequiredArgsConstructor
+@Tag(name = "订单管理", description = "Order management APIs")
 public class OrderController {
 
     private final OrderService orderService;

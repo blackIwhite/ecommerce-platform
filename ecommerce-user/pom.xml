@@ -28,6 +28,10 @@
         </dependency>
         <dependency>
             <groupId>com.ecommerce</groupId>
+            <artifactId>common-mq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ecommerce</groupId>
             <artifactId>ecommerce-api-user</artifactId>
         </dependency>
         <dependency>
@@ -49,6 +53,10 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

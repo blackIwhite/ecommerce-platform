@@ -1,0 +1,31 @@
+# Docker CI: validates the compose stack on pushes to main. docker/docker-compose.yml
+# currently defines only infrastructure services (mysql, redis, nacos, rabbitmq,
+# elasticsearch, prometheus, grafana, minio) with no `build:` keys, so this workflow
+# validates the file with `docker compose config` instead of building images.
+# If buildable app services are added later, switch the step to
+# `docker compose -f docker/docker-compose.yml build`. No registry pushes, no secrets,
+# no paid services.
+
+name: Docker Compose Validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docker/**'
+      - '.github/workflows/docker-build.yml'
+
+jobs:
+  validate:
+    name: Validate docker-compose.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # The compose file has no `build:` sections (infra services only), so validate
+      # its syntax/structure. Replace with `docker compose ... build` if app services
+      # with build keys are added.
+      - name: Validate compose file
+        run: docker compose -f docker/docker-compose.yml config --quiet

@@ -1,0 +1,51 @@
+# Backend CI: builds the Maven multi-module backend with JDK 21 (temurin) and runs
+# `mvn clean verify` (unit tests + JaCoCo coverage). Triggered on pushes and pull
+# requests that touch backend Java/POM files. On failure, surefire reports and
+# JaCoCo/target outputs are uploaded as artifacts for debugging.
+# Runs on GitHub-hosted or self-hosted runners; no external/paid services required.
+
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - '**/*.java'
+      - '**/pom.xml'
+      - 'pom.xml'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    paths:
+      - '**/*.java'
+      - '**/pom.xml'
+      - 'pom.xml'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  build:
+    name: Build & Test (JDK 21)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build and verify with Maven
+        run: mvn -B -ntp clean verify
+
+      - name: Upload test & coverage reports (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-reports
+          path: |
+            **/target/surefire-reports/
+            **/target/failsafe-reports/
+            **/target/site/jacoco/
+          if-no-files-found: ignore
+          retention-days: 7

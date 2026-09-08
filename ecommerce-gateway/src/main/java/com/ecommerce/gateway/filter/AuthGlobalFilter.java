@@ -45,12 +45,15 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             "/api/auth/auth/register",
             "/api/auth/auth/refresh",
             "/api/auth/auth/sms/**",
+            "/api/auth/auth/admin/login",
             "/api/product/product/spu/**",
             "/api/product/product/sku/**",
             "/api/product/product/category/tree",
             "/api/product/product/brand/list",
+            "/api/product/product/article/**",
             "/api/marketing/marketing/template/available",
-            "/api/marketing/marketing/promotion/active"
+            "/api/marketing/marketing/promotion/active",
+            "/api/file/file/internal/**"
     );
 
     @Override

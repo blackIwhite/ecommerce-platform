@@ -115,6 +115,21 @@ services:
     networks:
       - ecommerce-network
 
+  minio:
+    image: minio/minio:latest
+    container_name: ecommerce-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - ecommerce-network
+
 volumes:
   mysql-data:
   redis-data:
@@ -122,6 +137,7 @@ volumes:
   es-data:
   prometheus-data:
   grafana-data:
+  minio-data:
 
 networks:
   ecommerce-network:

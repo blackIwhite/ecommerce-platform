@@ -21,6 +21,7 @@
         <module>ecommerce-api-inventory</module>
         <module>ecommerce-api-marketing</module>
         <module>ecommerce-api-aftersales</module>
+        <module>ecommerce-api-file</module>
     </modules>
 
 </project>

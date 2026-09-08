@@ -5,6 +5,7 @@ import com.ecommerce.common.web.annotation.RequireLogin;
 import com.ecommerce.product.dto.CategoryCreateRequest;
 import com.ecommerce.product.dto.CategoryDTO;
 import com.ecommerce.product.service.CategoryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/product")
 @RequiredArgsConstructor
+@Tag(name = "分类管理", description = "Category management APIs")
 public class CategoryController {
 
     private final CategoryService categoryService;

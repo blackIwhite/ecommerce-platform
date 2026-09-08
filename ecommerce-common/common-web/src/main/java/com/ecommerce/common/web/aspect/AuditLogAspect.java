@@ -1,6 +1,8 @@
 package com.ecommerce.common.web.aspect;
 
 import com.ecommerce.common.core.annotation.AuditLog;
+import com.ecommerce.common.mq.constant.MqConstants;
+import com.ecommerce.common.mq.message.AuditLogMessage;
 import com.ecommerce.common.web.context.UserContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,22 +12,29 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.time.LocalDateTime;
-
+/**
+ * Collects audit information around methods annotated with {@link AuditLog} and
+ * publishes it to RabbitMQ (audit.exchange / audit.log). The user service consumes
+ * the events and persists them into the centralized ecommerce_user.t_audit_log table.
+ *
+ * <p>If no {@link RabbitTemplate} is available (service without AMQP support), the
+ * event is written as a structured log line instead, so auditing never breaks the
+ * business call.</p>
+ */
 @Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
 public class AuditLogAspect {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final ObjectProvider<RabbitTemplate> rabbitTemplateProvider;
     private final ObjectMapper objectMapper;
 
     @Value("${spring.application.name:unknown}")
@@ -54,14 +63,33 @@ public class AuditLogAspect {
 
     private void saveLog(String service, String module, String operation, String description,
                          String method, String params, int code, String userId, String ip, long duration) {
+        AuditLogMessage message = AuditLogMessage.builder()
+                .serviceName(service)
+                .module(module)
+                .operation(operation)
+                .description(description)
+                .method(method)
+                .requestParams(truncate(params, 2000))
+                .responseCode(code)
+                .userId(userId)
+                .ip(ip)
+                .duration(duration)
+                .createTime(System.currentTimeMillis())
+                .build();
         try {
-            jdbcTemplate.update(
-                    "INSERT INTO t_audit_log (service_name, module, operation, description, method, request_params, response_code, user_id, ip, duration, create_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    service, module, operation, description, method,
-                    truncate(params, 2000), code, userId, ip, duration, LocalDateTime.now()
-            );
-        } catch (Exception e) {
-            log.warn("Failed to save audit log: {}", e.getMessage());
+            RabbitTemplate rabbitTemplate = rabbitTemplateProvider.getIfAvailable();
+            if (rabbitTemplate != null) {
+                rabbitTemplate.convertAndSend(MqConstants.AUDIT_EXCHANGE, MqConstants.AUDIT_ROUTING_KEY, message);
+            } else {
+                // No RabbitMQ on the classpath/context: fall back to structured logging.
+                log.info("AUDIT service={} module={} operation={} description={} method={} responseCode={} userId={} ip={} duration={}ms createTime={} params={}",
+                        message.getServiceName(), message.getModule(), message.getOperation(), message.getDescription(),
+                        message.getMethod(), message.getResponseCode(), message.getUserId(), message.getIp(),
+                        message.getDuration(), message.getCreateTime(), message.getRequestParams());
+            }
+        } catch (Throwable e) {
+            // Audit must never break the business call.
+            log.warn("Failed to publish audit log: {}", e.getMessage());
         }
     }
 

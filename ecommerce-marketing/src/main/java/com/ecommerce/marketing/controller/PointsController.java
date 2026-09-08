@@ -7,6 +7,7 @@ import com.ecommerce.common.core.result.Result;
 import com.ecommerce.common.web.annotation.RequireLogin;
 import com.ecommerce.common.web.context.UserContextHolder;
 import com.ecommerce.marketing.service.PointsService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/marketing/points")
 @RequiredArgsConstructor
 @RequireLogin
+@Tag(name = "积分管理", description = "Points management APIs")
 public class PointsController {
 
     private final PointsService pointsService;

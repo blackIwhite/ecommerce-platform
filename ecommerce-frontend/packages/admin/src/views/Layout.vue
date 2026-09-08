@@ -27,6 +27,9 @@
         <el-menu-item index="/points-rules">
           <span>积分规则</span>
         </el-menu-item>
+        <el-menu-item index="/flash-sale">
+          <span>秒杀管理</span>
+        </el-menu-item>
         <el-menu-item index="/aftersales">
           <span>售后管理</span>
         </el-menu-item>
@@ -36,6 +39,21 @@
         <el-menu-item index="/audit-log">
           <span>审计日志</span>
         </el-menu-item>
+        <el-menu-item index="/cms/article">
+          <span>内容管理</span>
+        </el-menu-item>
+        <el-menu-item index="/report">
+          <span>数据报表</span>
+        </el-menu-item>
+        <el-menu-item index="/invoice">
+          <span>发票管理</span>
+        </el-menu-item>
+        <el-sub-menu index="system">
+          <template #title>系统管理</template>
+          <el-menu-item index="/system/admin-user">管理员</el-menu-item>
+          <el-menu-item index="/system/role">角色管理</el-menu-item>
+          <el-menu-item index="/system/file">文件管理</el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     <el-container>

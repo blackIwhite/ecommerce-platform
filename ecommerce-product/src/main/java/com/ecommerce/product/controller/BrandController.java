@@ -7,6 +7,7 @@ import com.ecommerce.product.dto.BrandCreateRequest;
 import com.ecommerce.product.dto.BrandDTO;
 import com.ecommerce.product.dto.BrandPageRequest;
 import com.ecommerce.product.service.BrandService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/product")
 @RequiredArgsConstructor
+@Tag(name = "品牌管理", description = "Brand management APIs")
 public class BrandController {
 
     private final BrandService brandService;

@@ -63,6 +63,12 @@ spring:
             - Path=/api/aftersales/**
           filters:
             - StripPrefix=2
+        - id: file-service
+          uri: lb://ecommerce-file
+          predicates:
+            - Path=/api/file/**
+          filters:
+            - StripPrefix=2
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -84,3 +90,24 @@ management:
   endpoint:
     health:
       show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Auth Service
+        url: /api/auth/v3/api-docs
+      - name: Product Service
+        url: /api/product/v3/api-docs
+      - name: User Service
+        url: /api/user/v3/api-docs
+      - name: Order Service
+        url: /api/order/v3/api-docs
+      - name: Inventory Service
+        url: /api/inventory/v3/api-docs
+      - name: Marketing Service
+        url: /api/marketing/v3/api-docs
+      - name: Aftersales Service
+        url: /api/aftersales/v3/api-docs

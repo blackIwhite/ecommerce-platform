@@ -5,12 +5,14 @@ import com.ecommerce.api.inventory.dto.InventoryLockRequest;
 import com.ecommerce.api.inventory.dto.InventoryUnlockRequest;
 import com.ecommerce.common.core.result.Result;
 import com.ecommerce.inventory.service.InventoryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/inventory")
 @RequiredArgsConstructor
+@Tag(name = "库存管理", description = "Inventory management APIs")
 public class InventoryController {
 
     private final InventoryService inventoryService;

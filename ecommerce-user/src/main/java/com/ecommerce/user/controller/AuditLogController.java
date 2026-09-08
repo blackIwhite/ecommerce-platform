@@ -2,6 +2,7 @@ package com.ecommerce.user.controller;
 
 import com.ecommerce.common.core.result.Result;
 import com.ecommerce.common.web.annotation.RequireLogin;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import java.util.Map;
 @RequestMapping("/user/admin/audit-log")
 @RequiredArgsConstructor
 @RequireLogin
+@Tag(name = "审计日志", description = "Audit log APIs")
 public class AuditLogController {
 
     private final JdbcTemplate jdbcTemplate;

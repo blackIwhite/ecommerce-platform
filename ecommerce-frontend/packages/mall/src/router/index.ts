@@ -98,6 +98,21 @@ const routes: RouteRecordRaw[] = [
     name: 'TicketDetail',
     component: () => import('@/views/ticket/Detail.vue'),
   },
+  {
+    path: '/messages',
+    name: 'Messages',
+    component: () => import('@/views/user/Messages.vue'),
+  },
+  {
+    path: '/invoices',
+    name: 'Invoices',
+    component: () => import('@/views/invoice/List.vue'),
+  },
+  {
+    path: '/browse-history',
+    name: 'BrowseHistory',
+    component: () => import('@/views/user/BrowseHistory.vue'),
+  },
 ]
 
 const router = createRouter({
@@ -105,7 +120,7 @@ const router = createRouter({
   routes,
 })
 
-const authRoutes = ['/cart', '/checkout', '/order', '/user', '/favorites', '/coupons', '/points', '/aftersales', '/ticket']
+const authRoutes = ['/cart', '/checkout', '/order', '/user', '/favorites', '/coupons', '/points', '/aftersales', '/ticket', '/messages', '/invoices', '/browse-history']
 
 router.beforeEach((to) => {
   if (authRoutes.some((r) => to.path.startsWith(r)) && !getToken()) {

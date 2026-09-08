@@ -16,6 +16,7 @@ import com.ecommerce.user.dto.UserUpdateRequest;
 import com.ecommerce.user.service.UserAddressService;
 import com.ecommerce.user.service.UserFavoriteService;
 import com.ecommerce.user.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
+@Tag(name = "用户管理", description = "User management APIs")
 public class UserController {
 
     private final UserService userService;

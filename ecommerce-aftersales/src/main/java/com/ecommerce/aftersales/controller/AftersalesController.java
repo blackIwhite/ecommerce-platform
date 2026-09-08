@@ -7,6 +7,7 @@ import com.ecommerce.common.core.result.Result;
 import com.ecommerce.common.web.annotation.RequireLogin;
 import com.ecommerce.common.web.context.UserContextHolder;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/aftersales")
+@Tag(name = "售后管理", description = "Aftersales management APIs")
 @RequiredArgsConstructor
 public class AftersalesController {
 

@@ -4,6 +4,7 @@ import com.ecommerce.api.marketing.dto.PromotionDTO;
 import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.result.Result;
 import com.ecommerce.marketing.service.PromotionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/marketing")
 @RequiredArgsConstructor
+@Tag(name = "促销管理", description = "Promotion management APIs")
 public class PromotionController {
 
     private final PromotionService promotionService;

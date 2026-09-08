@@ -6,6 +6,7 @@ import com.ecommerce.common.core.result.Result;
 import com.ecommerce.common.core.result.ResultCode;
 import com.ecommerce.marketing.entity.PointsRule;
 import com.ecommerce.marketing.mapper.PointsRuleMapper;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/marketing/admin/points")
 @RequiredArgsConstructor
+@Tag(name = "积分管理(后台)", description = "Points admin APIs")
 public class PointsAdminController {
 
     private final PointsRuleMapper pointsRuleMapper;

@@ -6,6 +6,7 @@ import com.ecommerce.common.web.context.UserContextHolder;
 import com.ecommerce.order.dto.CartAddRequest;
 import com.ecommerce.order.dto.CartItemDTO;
 import com.ecommerce.order.service.CartService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/cart")
 @RequiredArgsConstructor
+@Tag(name = "购物车", description = "Shopping cart APIs")
 public class CartController {
 
     private final CartService cartService;

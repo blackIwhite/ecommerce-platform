@@ -6,6 +6,7 @@ import com.ecommerce.common.web.context.UserContextHolder;
 import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.result.Result;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/ticket")
+@Tag(name = "服务工单", description = "Service ticket APIs")
 @RequiredArgsConstructor
 public class ServiceTicketController {
 

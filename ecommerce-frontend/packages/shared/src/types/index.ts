@@ -229,16 +229,6 @@ export interface FullReductionRule {
   reduction: number
 }
 
-export interface FlashSaleItemDTO {
-  id?: number
-  spuId: number
-  skuId: number
-  flashPrice: number
-  totalStock: number
-  availableStock?: number
-  limitPerUser?: number
-}
-
 export interface PointsAccountDTO {
   userId: number
   totalPoints: number
@@ -350,4 +340,147 @@ export interface ServiceHealthStatus {
   status: string
   host: string
   port: number
+}
+
+export interface AdminUserDTO {
+  id: number
+  username: string
+  realName: string
+  phone: string
+  email: string
+  avatar: string
+  status: number
+  roles?: RoleDTO[]
+  permissions?: string[]
+  lastLoginTime: string
+  createTime: string
+}
+
+export interface RoleDTO {
+  id: number
+  roleName: string
+  roleKey: string
+  description: string
+  status: number
+  sort: number
+  permissionIds?: number[]
+  menuIds?: number[]
+  createTime?: string
+}
+
+export interface PermissionDTO {
+  id: number
+  name: string
+  code: string
+  module: string
+  description: string
+}
+
+export interface MenuDTO {
+  id: number
+  parentId: number
+  name: string
+  path: string
+  component: string
+  icon: string
+  sort: number
+  type: number
+  permission: string
+  visible: number
+  status: number
+  children?: MenuDTO[]
+}
+
+export interface FileDTO {
+  id: number
+  originalName: string
+  url: string
+  fileSize: number
+  contentType: string
+  createTime: string
+}
+
+export interface FlashSaleItemDTO {
+  id?: number
+  promotionId?: number
+  spuId: number
+  skuId: number
+  flashPrice: number
+  totalStock: number
+  availableStock?: number
+  limitPerUser: number
+  productName?: string
+  productImage?: string
+}
+
+export interface ArticleCategoryDTO {
+  id: number
+  name: string
+  code: string
+  parentId: number
+  sortOrder: number
+  status: number
+  children?: ArticleCategoryDTO[]
+  createTime?: string
+}
+
+export interface ArticleDTO {
+  id: number
+  title: string
+  slug: string
+  content: string
+  summary: string
+  coverImage: string
+  categoryId: number
+  categoryName?: string
+  author: string
+  status: number
+  statusName?: string
+  sortOrder: number
+  viewCount: number
+  publishTime: string
+  createTime: string
+}
+
+export interface UserMessageDTO {
+  id: number
+  userId: number
+  type: number
+  typeName: string
+  title: string
+  content: string
+  referenceId: number
+  isRead: number
+  readTime: string
+  createTime: string
+}
+
+export interface UnreadCountDTO {
+  total: number
+  system: number
+  order: number
+  promotion: number
+  aftersales: number
+}
+
+export interface OrderStatsDTO {
+  orderCount: number
+  totalAmount: number
+  avgAmount: number
+  paidCount: number
+  refundedCount: number
+  cancelCount: number
+}
+
+export interface SalesReportDTO {
+  date: string
+  orderCount: number
+  totalAmount: number
+}
+
+export interface ProductSalesDTO {
+  spuId: number
+  productName: string
+  salesCount: number
+  totalAmount: number
 }

@@ -9,6 +9,7 @@ import com.ecommerce.order.dto.OrderDTO;
 import com.ecommerce.order.dto.OrderPageRequest;
 import com.ecommerce.order.dto.OrderShipRequest;
 import com.ecommerce.order.service.OrderService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequireLogin
 @ShowSensitive
+@Tag(name = "订单管理(后台)", description = "Order admin APIs")
 public class OrderAdminController {
 
     private final OrderService orderService;

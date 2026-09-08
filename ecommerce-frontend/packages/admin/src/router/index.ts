@@ -78,6 +78,41 @@ const routes: RouteRecordRaw[] = [
         name: 'AuditLog',
         component: () => import('@/views/audit/List.vue'),
       },
+      {
+        path: 'flash-sale',
+        name: 'FlashSale',
+        component: () => import('@/views/marketing/FlashSale.vue'),
+      },
+      {
+        path: 'system/admin-user',
+        name: 'AdminUser',
+        component: () => import('@/views/system/AdminUser.vue'),
+      },
+      {
+        path: 'system/role',
+        name: 'RoleManage',
+        component: () => import('@/views/system/Role.vue'),
+      },
+      {
+        path: 'system/file',
+        name: 'FileManage',
+        component: () => import('@/views/system/FileManage.vue'),
+      },
+      {
+        path: 'cms/article',
+        name: 'ArticleList',
+        component: () => import('@/views/cms/ArticleList.vue'),
+      },
+      {
+        path: 'report',
+        name: 'ReportDashboard',
+        component: () => import('@/views/report/ReportDashboard.vue'),
+      },
+      {
+        path: 'invoice',
+        name: 'InvoiceList',
+        component: () => import('@/views/invoice/List.vue'),
+      },
     ],
   },
 ]
