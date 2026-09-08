@@ -48,6 +48,36 @@ const routes: RouteRecordRaw[] = [
         name: 'InventoryList',
         component: () => import('@/views/inventory/List.vue'),
       },
+      {
+        path: 'coupon',
+        name: 'CouponList',
+        component: () => import('@/views/marketing/CouponList.vue'),
+      },
+      {
+        path: 'promotion',
+        name: 'PromotionList',
+        component: () => import('@/views/marketing/PromotionList.vue'),
+      },
+      {
+        path: 'points-rules',
+        name: 'PointsRules',
+        component: () => import('@/views/marketing/PointsRules.vue'),
+      },
+      {
+        path: 'aftersales',
+        name: 'AftersalesList',
+        component: () => import('@/views/aftersales/List.vue'),
+      },
+      {
+        path: 'ticket',
+        name: 'TicketList',
+        component: () => import('@/views/ticket/List.vue'),
+      },
+      {
+        path: 'audit-log',
+        name: 'AuditLog',
+        component: () => import('@/views/audit/List.vue'),
+      },
     ],
   },
 ]

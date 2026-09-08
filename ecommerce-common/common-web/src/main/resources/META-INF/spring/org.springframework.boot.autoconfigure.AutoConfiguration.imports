@@ -4,3 +4,5 @@ com.ecommerce.common.web.config.WebMvcConfig
 com.ecommerce.common.web.interceptor.RequestLogInterceptor
 com.ecommerce.common.web.interceptor.UserContextInterceptor
 com.ecommerce.common.web.interceptor.RequireLoginInterceptor
+com.ecommerce.common.web.interceptor.SensitiveDataInterceptor
+com.ecommerce.common.web.aspect.AuditLogAspect

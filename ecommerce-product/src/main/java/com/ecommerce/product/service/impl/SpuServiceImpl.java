@@ -2,6 +2,8 @@ package com.ecommerce.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ecommerce.api.product.dto.SalesIncrementItem;
+import com.ecommerce.api.product.dto.SpuSimpleDTO;
 import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.exception.BusinessException;
 import com.ecommerce.common.core.result.ResultCode;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -62,7 +65,7 @@ public class SpuServiceImpl implements SpuService {
         if (request.getStatus() != null) {
             wrapper.eq(Spu::getStatus, request.getStatus());
         }
-        wrapper.orderByDesc(Spu::getCreateTime);
+        applySort(wrapper, request.getSort());
         Page<Spu> spuPage = spuMapper.selectPage(page, wrapper);
 
         List<SpuDTO> dtoList = enrichSpuDTOList(spuPage.getRecords());
@@ -91,6 +94,8 @@ public class SpuServiceImpl implements SpuService {
                 .description(request.getDescription())
                 .images(request.getImages())
                 .status(0)
+                .salesCount(0)
+                .viewCount(0)
                 .build();
         spuMapper.insert(spu);
 
@@ -106,6 +111,7 @@ public class SpuServiceImpl implements SpuService {
                         .build();
                 skuMapper.insert(sku);
             }
+            syncMinPrice(spu);
         }
         spuEsService.indexSpu(spu.getId());
         return spu.getId();
@@ -144,6 +150,7 @@ public class SpuServiceImpl implements SpuService {
                         .build();
                 skuMapper.insert(sku);
             }
+            syncMinPrice(spu);
         }
         spuEsService.indexSpu(request.getId());
     }
@@ -157,6 +164,35 @@ public class SpuServiceImpl implements SpuService {
         spu.setStatus(status);
         spuMapper.updateById(spu);
         spuEsService.indexSpu(spuId);
+    }
+
+    @Override
+    public void incrementSales(List<SalesIncrementItem> items) {
+        for (SalesIncrementItem item : items) {
+            Spu spu = spuMapper.selectById(item.getSpuId());
+            if (spu != null) {
+                int newCount = (spu.getSalesCount() != null ? spu.getSalesCount() : 0) + item.getQuantity();
+                spu.setSalesCount(newCount);
+                spuMapper.updateById(spu);
+                spuEsService.indexSpu(item.getSpuId());
+            }
+        }
+    }
+
+    @Override
+    public List<SpuSimpleDTO> getSpuSimpleList(List<Long> spuIds) {
+        if (spuIds == null || spuIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Spu> spuList = spuMapper.selectBatchIds(spuIds);
+        return spuList.stream().map(spu -> SpuSimpleDTO.builder()
+                .spuId(spu.getId())
+                .name(spu.getName())
+                .categoryId(spu.getCategoryId())
+                .status(spu.getStatus())
+                .images(spu.getImages())
+                .minPrice(spu.getMinPrice())
+                .build()).collect(Collectors.toList());
     }
 
     private List<SpuDTO> enrichSpuDTOList(List<Spu> spuList) {
@@ -207,6 +243,33 @@ public class SpuServiceImpl implements SpuService {
         return enrichSpuDTOList(ordered);
     }
 
+    private void applySort(LambdaQueryWrapper<Spu> wrapper, String sort) {
+        if (sort == null) {
+            wrapper.orderByDesc(Spu::getCreateTime);
+            return;
+        }
+        switch (sort) {
+            case "sales_desc" -> wrapper.orderByDesc(Spu::getSalesCount);
+            case "price_asc" -> wrapper.orderByAsc(Spu::getMinPrice);
+            case "price_desc" -> wrapper.orderByDesc(Spu::getMinPrice);
+            case "newest" -> wrapper.orderByDesc(Spu::getCreateTime);
+            default -> wrapper.orderByDesc(Spu::getCreateTime);
+        }
+    }
+
+    private void syncMinPrice(Spu spu) {
+        LambdaQueryWrapper<Sku> skuWrapper = new LambdaQueryWrapper<>();
+        skuWrapper.eq(Sku::getSpuId, spu.getId());
+        List<Sku> skus = skuMapper.selectList(skuWrapper);
+        BigDecimal minPrice = skus.stream()
+                .map(Sku::getPrice)
+                .filter(Objects::nonNull)
+                .min(BigDecimal::compareTo)
+                .orElse(null);
+        spu.setMinPrice(minPrice);
+        spuMapper.updateById(spu);
+    }
+
     private SpuDTO toSpuDTO(Spu spu) {
         return SpuDTO.builder()
                 .spuId(spu.getId())
@@ -216,6 +279,11 @@ public class SpuServiceImpl implements SpuService {
                 .description(spu.getDescription())
                 .images(spu.getImages())
                 .status(spu.getStatus())
+                .salesCount(spu.getSalesCount())
+                .viewCount(spu.getViewCount())
+                .minPrice(spu.getMinPrice())
+                .avgRating(spu.getAvgRating())
+                .reviewCount(spu.getReviewCount())
                 .createTime(spu.getCreateTime())
                 .build();
     }

@@ -18,6 +18,24 @@
         <el-menu-item index="/inventory">
           <span>库存管理</span>
         </el-menu-item>
+        <el-menu-item index="/coupon">
+          <span>优惠券管理</span>
+        </el-menu-item>
+        <el-menu-item index="/promotion">
+          <span>促销活动</span>
+        </el-menu-item>
+        <el-menu-item index="/points-rules">
+          <span>积分规则</span>
+        </el-menu-item>
+        <el-menu-item index="/aftersales">
+          <span>售后管理</span>
+        </el-menu-item>
+        <el-menu-item index="/ticket">
+          <span>工单管理</span>
+        </el-menu-item>
+        <el-menu-item index="/audit-log">
+          <span>审计日志</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>

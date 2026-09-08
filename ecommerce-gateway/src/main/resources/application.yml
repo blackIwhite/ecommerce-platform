@@ -8,6 +8,7 @@ spring:
     nacos:
       discovery:
         server-addr: ${NACOS_ADDR:localhost:8848}
+        ip: 127.0.0.1
       config:
         server-addr: ${NACOS_ADDR:localhost:8848}
         import-check:
@@ -50,6 +51,18 @@ spring:
             - Path=/api/inventory/**
           filters:
             - StripPrefix=2
+        - id: marketing-service
+          uri: lb://ecommerce-marketing
+          predicates:
+            - Path=/api/marketing/**
+          filters:
+            - StripPrefix=2
+        - id: aftersales-service
+          uri: lb://ecommerce-aftersales
+          predicates:
+            - Path=/api/aftersales/**
+          filters:
+            - StripPrefix=2
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -62,3 +75,12 @@ jwt:
 logging:
   level:
     com.ecommerce.gateway: debug
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always

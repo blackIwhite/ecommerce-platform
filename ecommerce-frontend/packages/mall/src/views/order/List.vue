@@ -13,7 +13,7 @@
     <div v-if="orders.length" class="order-cards">
       <div v-for="order in orders" :key="order.orderId" class="order-card">
         <div class="order-header">
-          <span class="order-no">订单号：{{ order.orderNo }}</span>
+          <router-link :to="'/order/' + order.orderId" class="order-no">订单号：{{ order.orderNo }}</router-link>
           <span class="order-status" :class="'status-' + order.status">
             {{ statusText(order.status) }}
           </span>
@@ -58,14 +58,40 @@
         @current-change="loadOrders"
       />
     </div>
+
+    <el-dialog v-model="payResultVisible" title="支付成功" width="400px">
+      <div class="pay-result" v-if="payResult">
+        <div class="pay-result-icon">
+          <el-icon :size="48" color="#67c23a"><CircleCheckFilled /></el-icon>
+        </div>
+        <div class="pay-result-info">
+          <div class="pay-result-row">
+            <span class="label">支付单号：</span>
+            <span>{{ payResult.paymentNo }}</span>
+          </div>
+          <div class="pay-result-row">
+            <span class="label">支付金额：</span>
+            <span class="amount">¥{{ payResult.amount?.toFixed(2) }}</span>
+          </div>
+          <div class="pay-result-row">
+            <span class="label">支付方式：</span>
+            <el-tag type="info">{{ payResult.payMethod }}</el-tag>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button type="primary" @click="payResultVisible = false">完成</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { CircleCheckFilled } from '@element-plus/icons-vue'
 import { orderApi, formatPrice } from '@ecommerce/shared'
-import type { OrderDTO } from '@ecommerce/shared'
+import type { OrderDTO, PaymentDTO } from '@ecommerce/shared'
 
 const loading = ref(true)
 const orders = ref<OrderDTO[]>([])
@@ -73,6 +99,8 @@ const activeTab = ref(-1)
 const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+const payResultVisible = ref(false)
+const payResult = ref<PaymentDTO | null>(null)
 
 const statusMap: Record<number, string> = {
   0: '待付款', 1: '已付款', 2: '待发货', 3: '已发货', 4: '已完成', 5: '已取消',
@@ -104,7 +132,13 @@ const handlePay = async (order: OrderDTO) => {
   try {
     await ElMessageBox.confirm('确认支付该订单？', '支付')
     await orderApi.pay(order.orderId)
-    ElMessage.success('支付成功')
+    try {
+      const payment = await orderApi.getPayment(order.orderId)
+      payResult.value = payment
+      payResultVisible.value = true
+    } catch {
+      ElMessage.success('支付成功')
+    }
     loadOrders()
   } catch {}
 }
@@ -157,6 +191,11 @@ onMounted(loadOrders)
 .order-no {
   color: #666;
   font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.order-no:hover {
+  color: #409eff;
 }
 .order-status {
   font-weight: 500;
@@ -220,5 +259,33 @@ onMounted(loadOrders)
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+.pay-result {
+  text-align: center;
+  padding: 16px 0;
+}
+.pay-result-icon {
+  margin-bottom: 16px;
+}
+.pay-result-info {
+  text-align: left;
+}
+.pay-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.pay-result-row:last-child {
+  border-bottom: none;
+}
+.pay-result-row .label {
+  color: #666;
+}
+.pay-result-row .amount {
+  color: #e4393c;
+  font-size: 18px;
+  font-weight: bold;
 }
 </style>

@@ -11,6 +11,7 @@ public final class MqConstants {
     public static final String INVENTORY_EXCHANGE = "inventory.exchange";
     public static final String PAYMENT_EXCHANGE = "payment.exchange";
     public static final String NOTIFY_EXCHANGE = "notify.exchange";
+    public static final String MARKETING_EXCHANGE = "marketing.exchange";
 
     // ---- Order queues ----
 
@@ -26,6 +27,10 @@ public final class MqConstants {
     public static final String INVENTORY_UNLOCK_QUEUE = "inventory.queue.unlock";
     public static final String INVENTORY_DEDUCT_QUEUE = "inventory.queue.deduct";
 
+    // ---- Marketing queues ----
+
+    public static final String POINTS_EARN_QUEUE = "marketing.queue.points-earn";
+
     // ---- Routing keys ----
 
     public static final String ORDER_CREATE_KEY = "order.create";
@@ -36,6 +41,8 @@ public final class MqConstants {
     public static final String INVENTORY_LOCK_KEY = "inventory.lock";
     public static final String INVENTORY_UNLOCK_KEY = "inventory.unlock";
     public static final String INVENTORY_DEDUCT_KEY = "inventory.deduct";
+
+    public static final String POINTS_EARN_KEY = "marketing.points-earn";
 
     // ---- Delay (milliseconds) ----
 

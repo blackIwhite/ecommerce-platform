@@ -27,6 +27,8 @@
         <module>ecommerce-user</module>
         <module>ecommerce-order</module>
         <module>ecommerce-inventory</module>
+        <module>ecommerce-marketing</module>
+        <module>ecommerce-aftersales</module>
     </modules>
 
     <properties>
@@ -106,6 +108,16 @@
             <dependency>
                 <groupId>com.ecommerce</groupId>
                 <artifactId>ecommerce-api-inventory</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ecommerce</groupId>
+                <artifactId>ecommerce-api-marketing</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ecommerce</groupId>
+                <artifactId>ecommerce-api-aftersales</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -36,6 +36,11 @@ CREATE TABLE IF NOT EXISTS t_spu (
     description TEXT COMMENT 'SPU description',
     images TEXT COMMENT 'Image URLs, JSON array',
     status TINYINT NOT NULL DEFAULT 0 COMMENT 'Status: 0=draft, 1=on-shelf, 2=off-shelf',
+    sales_count INT NOT NULL DEFAULT 0 COMMENT 'Sales count',
+    view_count INT NOT NULL DEFAULT 0 COMMENT 'View count',
+    min_price DECIMAL(10,2) DEFAULT NULL COMMENT 'Min SKU price',
+    avg_rating DECIMAL(2,1) DEFAULT NULL COMMENT 'Average rating',
+    review_count INT NOT NULL DEFAULT 0 COMMENT 'Review count',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted TINYINT NOT NULL DEFAULT 0 COMMENT 'Logical delete: 0=not deleted, 1=deleted',
@@ -58,3 +63,21 @@ CREATE TABLE IF NOT EXISTS t_sku (
     deleted TINYINT NOT NULL DEFAULT 0 COMMENT 'Logical delete: 0=not deleted, 1=deleted',
     INDEX idx_spu_id (spu_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='SKU table';
+
+-- Review table
+CREATE TABLE IF NOT EXISTS t_review (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    spu_id BIGINT NOT NULL,
+    sku_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    order_id BIGINT NOT NULL,
+    rating TINYINT NOT NULL DEFAULT 5 COMMENT 'Rating: 1-5',
+    content VARCHAR(500) COMMENT 'Review content',
+    images TEXT COMMENT 'Review images, comma separated',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT 'Logical delete: 0=not deleted, 1=deleted',
+    INDEX idx_spu_id (spu_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_order_id (order_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Review table';

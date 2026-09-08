@@ -6,8 +6,10 @@ import com.ecommerce.auth.dto.RefreshRequest;
 import com.ecommerce.auth.dto.RegisterRequest;
 import com.ecommerce.auth.dto.SmsRequest;
 import com.ecommerce.auth.service.AuthService;
+import com.ecommerce.common.core.annotation.AuditLog;
 import com.ecommerce.common.core.result.Result;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,14 +26,16 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @AuditLog(module = "认证", operation = "登录", description = "用户登录")
     @PostMapping("/login")
-    public Result<LoginResponse> login(@RequestBody LoginRequest request) {
+    public Result<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
         LoginResponse response = authService.login(request);
         return Result.success(response);
     }
 
+    @AuditLog(module = "认证", operation = "注册", description = "用户注册")
     @PostMapping("/register")
-    public Result<LoginResponse> register(@RequestBody RegisterRequest request) {
+    public Result<LoginResponse> register(@RequestBody @Valid RegisterRequest request) {
         LoginResponse response = authService.register(request);
         return Result.success(response);
     }
@@ -58,13 +62,13 @@ public class AuthController {
     }
 
     @PostMapping("/sms/send")
-    public Result<Void> sendSmsCode(@RequestBody SmsRequest request) {
+    public Result<Void> sendSmsCode(@RequestBody @Valid SmsRequest request) {
         authService.sendSmsCode(request.getPhone());
         return Result.success();
     }
 
     @PostMapping("/refresh")
-    public Result<LoginResponse> refreshToken(@RequestBody RefreshRequest request) {
+    public Result<LoginResponse> refreshToken(@RequestBody @Valid RefreshRequest request) {
         LoginResponse response = authService.refreshToken(request);
         return Result.success(response);
     }

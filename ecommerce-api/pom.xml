@@ -19,6 +19,8 @@
         <module>ecommerce-api-user</module>
         <module>ecommerce-api-order</module>
         <module>ecommerce-api-inventory</module>
+        <module>ecommerce-api-marketing</module>
+        <module>ecommerce-api-aftersales</module>
     </modules>
 
 </project>

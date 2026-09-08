@@ -8,6 +8,7 @@ spring:
     nacos:
       discovery:
         server-addr: ${NACOS_ADDR:localhost:8848}
+        ip: 127.0.0.1
       config:
         server-addr: ${NACOS_ADDR:localhost:8848}
         import-check:
@@ -36,3 +37,12 @@ mybatis-plus:
 logging:
   level:
     com.ecommerce.order: debug
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always

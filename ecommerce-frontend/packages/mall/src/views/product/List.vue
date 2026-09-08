@@ -34,6 +34,18 @@
           {{ cat.name }}
         </el-check-tag>
       </div>
+
+      <div class="sort-bar">
+        <span
+          v-for="s in sortOptions"
+          :key="s.value"
+          class="sort-item"
+          :class="{ active: currentSort === s.value }"
+          @click="handleSort(s.value)"
+        >
+          {{ s.label }}
+        </span>
+      </div>
     </div>
 
     <div v-loading="loading">
@@ -54,6 +66,7 @@
             <div class="product-info">
               <div class="product-name">{{ item.name }}</div>
               <div class="product-category">{{ item.brandName }}</div>
+              <div class="product-price" v-if="item.minPrice">¥{{ item.minPrice.toFixed(2) }}</div>
             </div>
           </div>
         </el-col>
@@ -93,7 +106,25 @@ const queryParams = reactive({
   keyword: '',
   categoryId: undefined as number | undefined,
   status: 1,
+  sort: '',
 })
+
+const sortOptions = [
+  { label: '综合', value: '' },
+  { label: '销量', value: 'sales_desc' },
+  { label: '价格↑', value: 'price_asc' },
+  { label: '价格↓', value: 'price_desc' },
+  { label: '最新', value: 'newest' },
+]
+
+const currentSort = ref('')
+
+function handleSort(value: string) {
+  currentSort.value = value
+  queryParams.sort = value
+  queryParams.pageNum = 1
+  fetchData()
+}
 
 const flatCategories = computed(() => {
   const result: CategoryDTO[] = []
@@ -170,6 +201,29 @@ onMounted(async () => {
   flex-wrap: wrap;
 }
 
+.sort-bar {
+  margin-top: 12px;
+  display: flex;
+  gap: 20px;
+}
+
+.sort-item {
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.sort-item:hover {
+  color: #409eff;
+}
+
+.sort-item.active {
+  color: #409eff;
+  font-weight: 600;
+}
+
 .product-card {
   cursor: pointer;
   border-radius: 8px;
@@ -216,5 +270,12 @@ onMounted(async () => {
   font-size: 12px;
   color: #999;
   margin-top: 4px;
+}
+
+.product-price {
+  font-size: 16px;
+  color: #e4393c;
+  font-weight: 600;
+  margin-top: 6px;
 }
 </style>

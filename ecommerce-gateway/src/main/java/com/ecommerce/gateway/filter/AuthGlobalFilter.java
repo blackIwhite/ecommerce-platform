@@ -48,7 +48,9 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             "/api/product/product/spu/**",
             "/api/product/product/sku/**",
             "/api/product/product/category/tree",
-            "/api/product/product/brand/list"
+            "/api/product/product/brand/list",
+            "/api/marketing/marketing/template/available",
+            "/api/marketing/marketing/promotion/active"
     );
 
     @Override

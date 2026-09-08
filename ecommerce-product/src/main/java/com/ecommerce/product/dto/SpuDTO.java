@@ -25,6 +25,11 @@ public class SpuDTO implements Serializable {
     private String description;
     private String images;
     private Integer status;
+    private Integer salesCount;
+    private Integer viewCount;
+    private BigDecimal minPrice;
+    private BigDecimal avgRating;
+    private Integer reviewCount;
     private LocalDateTime createTime;
     private List<SkuDTO> skuList;
 }

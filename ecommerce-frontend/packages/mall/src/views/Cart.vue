@@ -114,7 +114,9 @@ const handleClear = async () => {
 }
 
 const handleCheckout = () => {
-  router.push('/order')
+  if (!selectedItems.value.length) return
+  const itemsStr = selectedItems.value.map((i) => `${i.skuId}:${i.quantity}`).join(',')
+  router.push(`/checkout?source=cart&items=${itemsStr}`)
 }
 
 const loadCart = async () => {

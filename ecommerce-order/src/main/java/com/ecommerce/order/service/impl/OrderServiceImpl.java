@@ -7,7 +7,11 @@ import com.ecommerce.api.inventory.dto.InventoryDeductRequest;
 import com.ecommerce.api.inventory.dto.InventoryItem;
 import com.ecommerce.api.inventory.dto.InventoryLockRequest;
 import com.ecommerce.api.inventory.dto.InventoryUnlockRequest;
+import com.ecommerce.api.marketing.MarketingApi;
+import com.ecommerce.api.marketing.dto.CouponUseRequest;
+import com.ecommerce.api.marketing.dto.CouponUseResponse;
 import com.ecommerce.api.product.ProductApi;
+import com.ecommerce.api.product.dto.SalesIncrementItem;
 import com.ecommerce.api.product.dto.SkuDTO;
 import com.ecommerce.api.user.UserApi;
 import com.ecommerce.api.user.dto.UserAddressDTO;
@@ -25,6 +29,8 @@ import com.ecommerce.order.dto.OrderItemDTO;
 import com.ecommerce.order.dto.OrderPageRequest;
 import com.ecommerce.order.dto.OrderShipRequest;
 import com.ecommerce.order.dto.OrderSubmitRequest;
+import com.ecommerce.order.dto.LogisticsTraceDTO;
+import com.ecommerce.order.dto.StatusLogDTO;
 import com.ecommerce.order.entity.Order;
 import com.ecommerce.order.entity.OrderItem;
 import com.ecommerce.order.entity.OrderStatusLog;
@@ -34,6 +40,9 @@ import com.ecommerce.order.mapper.OrderMapper;
 import com.ecommerce.order.mapper.OrderStatusLogMapper;
 import com.ecommerce.order.mq.OrderMessageProducer;
 import com.ecommerce.order.service.OrderService;
+import com.ecommerce.order.service.PaymentService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,6 +71,12 @@ public class OrderServiceImpl implements OrderService {
     private final InventoryApi inventoryApi;
     private final RedisUtils redisUtils;
     private final OrderMessageProducer orderMessageProducer;
+    private final PaymentService paymentService;
+    private final MarketingApi marketingApi;
+    private final Counter orderCreatedCounter;
+    private final Counter orderPaidCounter;
+    private final Counter orderCancelledCounter;
+    private final Timer orderProcessingTimer;
 
     private static final String ORDER_NO_SEQ_KEY_PREFIX = "order:no:seq:";
 
@@ -88,6 +103,7 @@ public class OrderServiceImpl implements OrderService {
 
             items.add(OrderItemDTO.builder()
                     .skuId(sku.getSkuId())
+                    .spuId(sku.getSpuId())
                     .skuName(sku.getSkuName())
                     .price(sku.getPrice())
                     .quantity(itemReq.getQuantity())
@@ -96,8 +112,26 @@ public class OrderServiceImpl implements OrderService {
                     .build());
         }
 
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        if (request.getUserCouponId() != null) {
+            Long userId = UserContextHolder.getUserId();
+            if (userId != null) {
+                CouponUseResponse couponResp = checkFeignResult(
+                        marketingApi.checkCoupon(request.getUserCouponId(), userId, totalAmount),
+                        ResultCode.ORDER_PRODUCT_QUERY_FAILED);
+                discountAmount = couponResp.getDiscountAmount();
+            }
+        }
+
+        BigDecimal payableAmount = totalAmount.subtract(discountAmount);
+        if (payableAmount.compareTo(BigDecimal.ZERO) < 0) {
+            payableAmount = BigDecimal.ZERO;
+        }
+
         return OrderConfirmResponse.builder()
                 .totalAmount(totalAmount)
+                .discountAmount(discountAmount)
+                .payableAmount(payableAmount)
                 .items(items)
                 .build();
     }
@@ -120,11 +154,27 @@ public class OrderServiceImpl implements OrderService {
         String fullAddress = address.getProvince() + address.getCity()
                 + address.getDistrict() + address.getDetailAddress();
 
+        Long couponId = null;
+        BigDecimal discountAmount = confirm.getDiscountAmount() != null ? confirm.getDiscountAmount() : BigDecimal.ZERO;
+
+        if (request.getUserCouponId() != null && discountAmount.compareTo(BigDecimal.ZERO) > 0) {
+            CouponUseRequest couponUseRequest = CouponUseRequest.builder()
+                    .userCouponId(request.getUserCouponId())
+                    .userId(userId)
+                    .orderAmount(confirm.getTotalAmount())
+                    .build();
+            CouponUseResponse couponResp = checkFeignResult(
+                    marketingApi.useCoupon(couponUseRequest), ResultCode.ORDER_PRODUCT_QUERY_FAILED);
+            couponId = couponResp.getUserCouponId();
+        }
+
         String orderNo = generateOrderNo();
         Order order = Order.builder()
                 .orderNo(orderNo)
                 .userId(userId)
-                .totalAmount(confirm.getTotalAmount())
+                .totalAmount(confirm.getPayableAmount() != null ? confirm.getPayableAmount() : confirm.getTotalAmount())
+                .couponId(couponId)
+                .discountAmount(discountAmount)
                 .status(OrderStatus.PENDING_PAY.getCode())
                 .receiverName(address.getReceiverName())
                 .receiverPhone(address.getReceiverPhone())
@@ -137,6 +187,7 @@ public class OrderServiceImpl implements OrderService {
         for (OrderItemDTO item : confirm.getItems()) {
             OrderItem orderItem = OrderItem.builder()
                     .orderId(order.getId())
+                    .spuId(item.getSpuId())
                     .skuId(item.getSkuId())
                     .skuName(item.getSkuName())
                     .price(item.getPrice())
@@ -170,6 +221,8 @@ public class OrderServiceImpl implements OrderService {
         OrderMessage msg = orderMessageProducer.buildMessage(order, orderItems, null);
         orderMessageProducer.sendOrderCreated(msg);
         orderMessageProducer.sendDelayAutoCancel(msg);
+
+        orderCreatedCounter.increment();
 
         return order.getId();
     }
@@ -254,6 +307,8 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCode.ORDER_INVENTORY_DEDUCT_FAILED);
         }
 
+        paymentService.createPayment(orderId, order.getTotalAmount());
+
         order.setStatus(OrderStatus.PAID.getCode());
         orderMapper.updateById(order);
         saveStatusLog(orderId, OrderStatus.PENDING_PAY.getCode(), OrderStatus.PAID.getCode(), "payment", "payment completed");
@@ -267,6 +322,8 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> items = orderItemMapper.selectList(itemWrapper);
         OrderMessage msg = orderMessageProducer.buildMessage(order, items, null);
         orderMessageProducer.sendOrderPaySuccess(msg);
+
+        orderPaidCounter.increment();
     }
 
     @Override
@@ -283,6 +340,8 @@ public class OrderServiceImpl implements OrderService {
 
         Long userId = UserContextHolder.getUserId();
         order.setStatus(OrderStatus.SHIPPED.getCode());
+        order.setLogisticsCompany(request.getLogisticsCompany());
+        order.setTrackingNo(request.getTrackingNo());
         orderMapper.updateById(order);
         saveStatusLog(orderId, OrderStatus.PENDING_SHIP.getCode(), OrderStatus.SHIPPED.getCode(),
                 "admin:" + userId, request.getLogisticsCompany() + " " + request.getTrackingNo());
@@ -303,6 +362,31 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.updateById(order);
         saveStatusLog(orderId, OrderStatus.SHIPPED.getCode(), OrderStatus.COMPLETED.getCode(),
                 "user:" + userId, "order received");
+
+        try {
+            LambdaQueryWrapper<OrderItem> itemWrapper = new LambdaQueryWrapper<>();
+            itemWrapper.eq(OrderItem::getOrderId, orderId);
+            List<OrderItem> items = orderItemMapper.selectList(itemWrapper);
+
+            List<Long> skuIds = items.stream().map(OrderItem::getSkuId).toList();
+            List<SkuDTO> skus = productApi.getSkuListByIds(skuIds).getData();
+
+            List<SalesIncrementItem> incrementItems = items.stream().map(item -> {
+                Long spuId = skus.stream()
+                        .filter(s -> s.getSkuId().equals(item.getSkuId()))
+                        .findFirst()
+                        .map(SkuDTO::getSpuId)
+                        .orElse(item.getSkuId());
+                return SalesIncrementItem.builder()
+                        .spuId(spuId)
+                        .quantity(item.getQuantity())
+                        .build();
+            }).toList();
+
+            productApi.incrementSales(incrementItems);
+        } catch (Exception e) {
+            log.warn("Failed to increment sales for order {}: {}", orderId, e.getMessage());
+        }
     }
 
     @Override
@@ -317,11 +401,71 @@ public class OrderServiceImpl implements OrderService {
         doCancel(order, "Payment timeout auto-cancel", "system");
     }
 
+    @Override
+    public LogisticsTraceDTO getLogisticsTrace(Long orderId) {
+        Order order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException(ResultCode.ORDER_NOT_FOUND);
+        }
+        checkOwnership(order);
+
+        String company = order.getLogisticsCompany();
+        String trackingNo = order.getTrackingNo();
+        if (company == null || trackingNo == null) {
+            return LogisticsTraceDTO.builder()
+                    .trackingNo(trackingNo)
+                    .logisticsCompany(company)
+                    .traces(List.of())
+                    .build();
+        }
+
+        String createTime = order.getCreateTime() != null
+                ? order.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                : "2026-09-07 10:00";
+
+        List<LogisticsTraceDTO.TraceNode> traces = new ArrayList<>();
+        traces.add(LogisticsTraceDTO.TraceNode.builder()
+                .time(createTime)
+                .description("商家已发货，" + company + "已揽收")
+                .build());
+
+        if (order.getStatus() >= OrderStatus.SHIPPED.getCode()) {
+            traces.add(LogisticsTraceDTO.TraceNode.builder()
+                    .time(createTime)
+                    .description("包裹正在运输中")
+                    .build());
+            traces.add(LogisticsTraceDTO.TraceNode.builder()
+                    .time(createTime)
+                    .description("包裹已到达目的地城市，正在派送中")
+                    .build());
+        }
+        if (order.getStatus() >= OrderStatus.COMPLETED.getCode()) {
+            traces.add(LogisticsTraceDTO.TraceNode.builder()
+                    .time(createTime)
+                    .description("包裹已签收")
+                    .build());
+        }
+
+        return LogisticsTraceDTO.builder()
+                .trackingNo(trackingNo)
+                .logisticsCompany(company)
+                .traces(traces)
+                .build();
+    }
+
     private void doCancel(Order order, String reason, String operator) {
         order.setStatus(OrderStatus.CANCELLED.getCode());
         orderMapper.updateById(order);
         saveStatusLog(order.getId(), OrderStatus.PENDING_PAY.getCode(), OrderStatus.CANCELLED.getCode(),
                 operator, reason);
+
+        if (order.getCouponId() != null) {
+            try {
+                marketingApi.releaseCoupon(order.getCouponId());
+            } catch (Exception e) {
+                log.warn("Failed to release coupon {} for order {}: {}", order.getCouponId(), order.getId(), e.getMessage());
+            }
+        }
 
         InventoryUnlockRequest unlockRequest = InventoryUnlockRequest.builder()
                 .orderId(order.getId()).build();
@@ -336,6 +480,8 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> items = orderItemMapper.selectList(itemWrapper);
         OrderMessage msg = orderMessageProducer.buildMessage(order, items, reason);
         orderMessageProducer.sendOrderCancelled(msg);
+
+        orderCancelledCounter.increment();
     }
 
     private void checkOwnership(Order order) {
@@ -366,6 +512,18 @@ public class OrderServiceImpl implements OrderService {
         itemWrapper.eq(OrderItem::getOrderId, order.getId());
         List<OrderItem> items = orderItemMapper.selectList(itemWrapper);
         dto.setItems(items.stream().map(this::toOrderItemDTO).toList());
+
+        LambdaQueryWrapper<OrderStatusLog> logWrapper = new LambdaQueryWrapper<>();
+        logWrapper.eq(OrderStatusLog::getOrderId, order.getId())
+                .orderByAsc(OrderStatusLog::getCreateTime);
+        List<OrderStatusLog> logs = orderStatusLogMapper.selectList(logWrapper);
+        dto.setStatusLogs(logs.stream().map(log -> StatusLogDTO.builder()
+                .fromStatus(log.getFromStatus())
+                .toStatus(log.getToStatus())
+                .operator(log.getOperator())
+                .remark(log.getRemark())
+                .createTime(log.getCreateTime())
+                .build()).toList());
         return dto;
     }
 
@@ -402,23 +560,38 @@ public class OrderServiceImpl implements OrderService {
                 .orderNo(order.getOrderNo())
                 .userId(order.getUserId())
                 .totalAmount(order.getTotalAmount())
+                .couponId(order.getCouponId())
+                .discountAmount(order.getDiscountAmount())
                 .status(order.getStatus())
                 .receiverName(order.getReceiverName())
                 .receiverPhone(order.getReceiverPhone())
                 .receiverAddress(order.getReceiverAddress())
                 .remark(order.getRemark())
                 .createTime(order.getCreateTime())
+                .logisticsCompany(order.getLogisticsCompany())
+                .trackingNo(order.getTrackingNo())
                 .build();
     }
 
     private OrderItemDTO toOrderItemDTO(OrderItem item) {
         return OrderItemDTO.builder()
+                .id(item.getId())
                 .skuId(item.getSkuId())
+                .spuId(item.getSpuId())
                 .skuName(item.getSkuName())
+                .productName(item.getSkuName())
                 .price(item.getPrice())
                 .quantity(item.getQuantity())
                 .totalPrice(item.getTotalPrice())
                 .image(item.getImage())
                 .build();
+    }
+
+    @Override
+    public List<OrderItemDTO> getOrderItems(Long orderId) {
+        LambdaQueryWrapper<OrderItem> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OrderItem::getOrderId, orderId);
+        List<OrderItem> items = orderItemMapper.selectList(wrapper);
+        return items.stream().map(this::toOrderItemDTO).toList();
     }
 }

@@ -19,6 +19,10 @@
           <el-button type="primary" :loading="loading" @click="handleLogin">登录</el-button>
           <el-button @click="$router.push('/')">返回</el-button>
         </el-form-item>
+        <el-form-item>
+          <span style="color: #666">还没有账号？</span>
+          <router-link to="/register">立即注册</router-link>
+        </el-form-item>
       </el-form>
     </el-card>
   </div>

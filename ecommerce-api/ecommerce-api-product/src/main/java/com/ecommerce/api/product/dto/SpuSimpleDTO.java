@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -17,4 +18,6 @@ public class SpuSimpleDTO implements Serializable {
     private String name;
     private Long categoryId;
     private Integer status;
+    private String images;
+    private BigDecimal minPrice;
 }

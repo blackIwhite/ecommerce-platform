@@ -51,4 +51,16 @@ public class SpuDocument {
 
     @Field(type = FieldType.Date)
     private LocalDateTime createTime;
+
+    @Field(type = FieldType.Integer)
+    private Integer salesCount;
+
+    @Field(type = FieldType.Integer)
+    private Integer viewCount;
+
+    @Field(type = FieldType.Double)
+    private Double avgRating;
+
+    @Field(type = FieldType.Integer)
+    private Integer reviewCount;
 }

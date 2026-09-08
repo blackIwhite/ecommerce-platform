@@ -74,4 +74,25 @@ public class RabbitMQConfig {
     public Binding orderCloseBinding() {
         return BindingBuilder.bind(orderCloseQueue()).to(orderExchange()).with(MqConstants.ORDER_CLOSE_KEY);
     }
+
+    // ---- Marketing exchange ----
+
+    @Bean
+    public DirectExchange marketingExchange() {
+        return new DirectExchange(MqConstants.MARKETING_EXCHANGE, true, false);
+    }
+
+    // ---- Marketing queues ----
+
+    @Bean
+    public Queue pointsEarnQueue() {
+        return QueueBuilder.durable(MqConstants.POINTS_EARN_QUEUE).build();
+    }
+
+    // ---- Marketing bindings ----
+
+    @Bean
+    public Binding pointsEarnBinding() {
+        return BindingBuilder.bind(pointsEarnQueue()).to(marketingExchange()).with(MqConstants.POINTS_EARN_KEY);
+    }
 }

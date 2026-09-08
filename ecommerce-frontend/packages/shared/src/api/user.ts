@@ -1,5 +1,5 @@
-import request, { get } from './request'
-import type { UserDTO, PageResult } from '../types/index'
+import request, { get, post, put, del } from './request'
+import type { UserDTO, UserAddressDTO, PageResult } from '../types/index'
 
 export interface UserPageParams {
   pageNum?: number
@@ -8,10 +8,43 @@ export interface UserPageParams {
   status?: number
 }
 
+export interface UpdateProfileRequest {
+  nickname?: string
+  avatar?: string
+}
+
+export interface AddressRequest {
+  receiverName: string
+  receiverPhone: string
+  province: string
+  city: string
+  district: string
+  detailAddress: string
+  isDefault?: number
+}
+
 export const userApi = {
   page: (params: UserPageParams) =>
-    get<PageResult<UserDTO>>('/user/page', params),
+    get<PageResult<UserDTO>>('/user/user/page', params),
 
   updateStatus: (userId: number, status: number) =>
-    request.put<void>(`/user/${userId}/status`, null, { params: { status } }),
+    request.put<void>(`/user/user/${userId}/status`, null, { params: { status } }),
+
+  getMe: () =>
+    get<UserDTO>('/user/user/me'),
+
+  updateProfile: (data: UpdateProfileRequest) =>
+    put<UserDTO>('/user/user', data),
+
+  getAddressList: () =>
+    get<UserAddressDTO[]>('/user/user/address/list'),
+
+  addAddress: (data: AddressRequest) =>
+    post<UserAddressDTO>('/user/user/address', data),
+
+  updateAddress: (data: AddressRequest & { addressId: number }) =>
+    put<UserAddressDTO>('/user/user/address', data),
+
+  deleteAddress: (addressId: number) =>
+    del<void>(`/user/user/address/${addressId}`),
 }

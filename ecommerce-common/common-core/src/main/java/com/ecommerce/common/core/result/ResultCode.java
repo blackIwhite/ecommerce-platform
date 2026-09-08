@@ -45,7 +45,33 @@ public enum ResultCode {
     ORDER_INVENTORY_UNLOCK_FAILED(5005, "Failed to unlock inventory"),
     ORDER_INVENTORY_DEDUCT_FAILED(5006, "Failed to deduct inventory"),
     ORDER_PRODUCT_QUERY_FAILED(5007, "Failed to query product info"),
-    ORDER_ADDRESS_QUERY_FAILED(5008, "Failed to query user address");
+    ORDER_ADDRESS_QUERY_FAILED(5008, "Failed to query user address"),
+
+    // Review module codes (3xxx continued)
+    REVIEW_ALREADY_EXISTS(3004, "This order product has already been reviewed"),
+    REVIEW_ORDER_NOT_COMPLETED(3005, "Can only review after order is completed"),
+    REVIEW_ORDER_ACCESS_DENIED(3006, "No permission to review this order"),
+
+    // Marketing module codes (6xxx)
+    COUPON_TEMPLATE_NOT_FOUND(6001, "Coupon template not found"),
+    COUPON_TEMPLATE_DISABLED(6002, "Coupon template is disabled"),
+    COUPON_CLAIM_LIMIT_EXCEEDED(6003, "Coupon claim limit exceeded"),
+    COUPON_OUT_OF_STOCK(6004, "Coupon is out of stock"),
+    COUPON_NOT_AVAILABLE(6005, "Coupon is not available"),
+    USER_COUPON_NOT_FOUND(6006, "User coupon not found"),
+    USER_COUPON_ALREADY_USED(6007, "User coupon is already used"),
+    USER_COUPON_EXPIRED(6008, "User coupon has expired"),
+    COUPON_NOT_USABLE(6009, "Coupon does not meet usage conditions"),
+    POINTS_ACCOUNT_NOT_FOUND(6010, "Points account not found"),
+    POINTS_INSUFFICIENT(6011, "Insufficient points balance"),
+    POINTS_EARN_FAILED(6012, "Failed to earn points"),
+    POINTS_REDEEM_FAILED(6013, "Failed to redeem points"),
+    POINTS_RULE_NOT_FOUND(6014, "Points rule not found"),
+
+    // Aftersales module codes (7xxx)
+    AFTERSALES_NOT_FOUND(7001, "Aftersales order not found"),
+    AFTERSALES_ORDER_NOT_PAID(7002, "Order must be paid before applying for aftersales"),
+    AFTERSALES_STATUS_ERROR(7003, "Aftersales status does not allow this operation");
 
     private final int code;
     private final String message;

@@ -16,5 +16,7 @@ import java.util.List;
 public class OrderConfirmResponse implements Serializable {
 
     private BigDecimal totalAmount;
+    private BigDecimal discountAmount;
+    private BigDecimal payableAmount;
     private List<OrderItemDTO> items;
 }

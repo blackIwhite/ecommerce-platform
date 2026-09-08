@@ -32,6 +32,8 @@ public class OrderSubmitRequest implements Serializable {
     @Size(max = 500)
     private String remark;
 
+    private Long userCouponId;
+
     @Data
     @Builder
     @NoArgsConstructor

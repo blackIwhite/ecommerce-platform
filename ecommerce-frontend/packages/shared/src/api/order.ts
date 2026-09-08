@@ -1,5 +1,5 @@
-import request, { get, post, put } from './request'
-import type { OrderDTO, PageResult } from '../types/index'
+import { get, post, put } from './request'
+import type { OrderDTO, PaymentDTO, LogisticsTraceDTO, PageResult } from '../types/index'
 
 export interface OrderPageParams {
   pageNum?: number
@@ -11,11 +11,14 @@ export interface OrderPageParams {
 export interface OrderSubmitParams {
   addressId: number
   remark?: string
+  userCouponId?: number
   items: { skuId: number; quantity: number }[]
 }
 
 export interface OrderConfirmResult {
   totalAmount: number
+  discountAmount: number
+  payableAmount: number
   items: {
     skuId: number
     skuName: string
@@ -28,35 +31,41 @@ export interface OrderConfirmResult {
 
 export const orderApi = {
   confirm: (data: OrderSubmitParams) =>
-    post<OrderConfirmResult>('/order/confirm', data),
+    post<OrderConfirmResult>('/order/order/confirm', data),
 
   submit: (data: OrderSubmitParams) =>
-    post<number>('/order/submit', data),
+    post<number>('/order/order/submit', data),
 
   list: (params: OrderPageParams) =>
-    get<PageResult<OrderDTO>>('/order/list', params),
+    get<PageResult<OrderDTO>>('/order/order/list', params),
 
   getDetail: (orderId: number) =>
-    get<OrderDTO>(`/order/${orderId}`),
+    get<OrderDTO>(`/order/order/${orderId}`),
 
   getStatus: (orderId: number) =>
-    get<number>(`/order/status/${orderId}`),
+    get<number>(`/order/order/status/${orderId}`),
 
   cancel: (orderId: number, reason?: string) =>
-    put<void>(`/order/${orderId}/cancel`, { cancelReason: reason }),
+    put<void>(`/order/order/${orderId}/cancel`, { cancelReason: reason }),
 
   pay: (orderId: number) =>
-    put<void>(`/order/${orderId}/pay`),
+    put<void>(`/order/order/${orderId}/pay`),
 
   receive: (orderId: number) =>
-    put<void>(`/order/${orderId}/receive`),
+    put<void>(`/order/order/${orderId}/receive`),
 
   adminList: (params: OrderPageParams) =>
-    get<PageResult<OrderDTO>>('/order/admin/list', params),
+    get<PageResult<OrderDTO>>('/order/order/admin/list', params),
 
   adminDetail: (orderId: number) =>
-    get<OrderDTO>(`/order/admin/${orderId}`),
+    get<OrderDTO>(`/order/order/admin/${orderId}`),
 
   adminShip: (orderId: number, trackingNo: string) =>
-    request.put<void>(`/order/admin/${orderId}/ship`, { trackingNo }),
+    put<void>(`/order/order/admin/${orderId}/ship`, { trackingNo }),
+
+  getPayment: (orderId: number) =>
+    get<PaymentDTO>(`/order/order/payment/${orderId}`),
+
+  getLogistics: (orderId: number) =>
+    get<LogisticsTraceDTO>(`/order/order/${orderId}/logistics`),
 }

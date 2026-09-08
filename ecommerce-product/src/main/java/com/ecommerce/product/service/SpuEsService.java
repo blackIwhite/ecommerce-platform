@@ -87,10 +87,24 @@ public class SpuEsService {
 
         BoolQuery boolQuery = boolBuilder.build();
 
-        NativeQuery nativeQuery = NativeQuery.builder()
+        var queryBuilder = NativeQuery.builder()
                 .withQuery(new Query(boolQuery))
-                .withPageable(PageRequest.of(request.getPageNum() - 1, request.getPageSize()))
-                .build();
+                .withPageable(PageRequest.of(request.getPageNum() - 1, request.getPageSize()));
+
+        if (request.getSort() != null) {
+            switch (request.getSort()) {
+                case "sales_desc" -> queryBuilder.withSort(org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC, "salesCount"));
+                case "price_asc" -> queryBuilder.withSort(org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.ASC, "minPrice"));
+                case "price_desc" -> queryBuilder.withSort(org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC, "minPrice"));
+                case "newest" -> queryBuilder.withSort(org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC, "createTime"));
+            }
+        }
+
+        NativeQuery nativeQuery = queryBuilder.build();
 
         SearchHits<SpuDocument> searchHits = esOperations.search(nativeQuery, SpuDocument.class);
 
@@ -189,6 +203,10 @@ public class SpuEsService {
                 .brandName(brandName)
                 .minPrice(minPrice)
                 .maxPrice(maxPrice)
+                .salesCount(spu.getSalesCount())
+                .viewCount(spu.getViewCount())
+                .avgRating(spu.getAvgRating() != null ? spu.getAvgRating().doubleValue() : null)
+                .reviewCount(spu.getReviewCount())
                 .createTime(spu.getCreateTime())
                 .build();
     }

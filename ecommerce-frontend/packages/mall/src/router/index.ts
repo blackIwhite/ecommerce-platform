@@ -14,6 +14,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/Login.vue'),
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/Register.vue'),
+  },
+  {
     path: '/product',
     name: 'ProductList',
     component: () => import('@/views/product/List.vue'),
@@ -22,6 +27,11 @@ const routes: RouteRecordRaw[] = [
     path: '/product/:id',
     name: 'ProductDetail',
     component: () => import('@/views/product/Detail.vue'),
+  },
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: () => import('@/views/checkout/Index.vue'),
   },
   {
     path: '/cart',
@@ -34,9 +44,59 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/order/List.vue'),
   },
   {
+    path: '/order/:id',
+    name: 'OrderDetail',
+    component: () => import('@/views/order/Detail.vue'),
+  },
+  {
     path: '/user',
     name: 'UserCenter',
     component: () => import('@/views/user/Center.vue'),
+  },
+  {
+    path: '/favorites',
+    name: 'Favorites',
+    component: () => import('@/views/user/Favorites.vue'),
+  },
+  {
+    path: '/coupons',
+    name: 'Coupons',
+    component: () => import('@/views/user/Coupons.vue'),
+  },
+  {
+    path: '/points',
+    name: 'Points',
+    component: () => import('@/views/user/Points.vue'),
+  },
+  {
+    path: '/aftersales',
+    name: 'AftersalesList',
+    component: () => import('@/views/aftersales/List.vue'),
+  },
+  {
+    path: '/aftersales/apply',
+    name: 'AftersalesApply',
+    component: () => import('@/views/aftersales/Apply.vue'),
+  },
+  {
+    path: '/aftersales/:id',
+    name: 'AftersalesDetail',
+    component: () => import('@/views/aftersales/Detail.vue'),
+  },
+  {
+    path: '/ticket',
+    name: 'TicketList',
+    component: () => import('@/views/ticket/List.vue'),
+  },
+  {
+    path: '/ticket/create',
+    name: 'TicketCreate',
+    component: () => import('@/views/ticket/Create.vue'),
+  },
+  {
+    path: '/ticket/:id',
+    name: 'TicketDetail',
+    component: () => import('@/views/ticket/Detail.vue'),
   },
 ]
 
@@ -45,7 +105,7 @@ const router = createRouter({
   routes,
 })
 
-const authRoutes = ['/cart', '/order', '/user']
+const authRoutes = ['/cart', '/checkout', '/order', '/user', '/favorites', '/coupons', '/points', '/aftersales', '/ticket']
 
 router.beforeEach((to) => {
   if (authRoutes.some((r) => to.path.startsWith(r)) && !getToken()) {

@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 public class OrderItem extends BaseEntity {
 
     private Long orderId;
+    private Long spuId;
     private Long skuId;
     private String skuName;
     private BigDecimal price;

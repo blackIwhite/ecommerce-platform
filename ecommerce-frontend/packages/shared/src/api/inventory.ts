@@ -19,11 +19,11 @@ export interface InventoryPageParams {
 
 export const inventoryApi = {
   list: (params: InventoryPageParams) =>
-    get<PageResult<InventoryDTO>>('/inventory/admin/list', params),
+    get<PageResult<InventoryDTO>>('/inventory/inventory/admin/list', params),
 
   setStock: (skuId: number, stock: number) =>
-    request.post<void>('/inventory/admin/stock/set', { skuId, stock }),
+    request.post<void>('/inventory/inventory/admin/stock/set', { skuId, stock }),
 
   adjustStock: (skuId: number, delta: number) =>
-    request.post<void>('/inventory/admin/stock/adjust', { skuId, delta }),
+    request.post<void>('/inventory/inventory/admin/stock/adjust', { skuId, delta }),
 }

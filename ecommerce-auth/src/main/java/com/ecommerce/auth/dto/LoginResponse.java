@@ -1,5 +1,6 @@
 package com.ecommerce.auth.dto;
 
+import com.ecommerce.common.core.annotation.SensitiveData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ public class LoginResponse {
 
     private Long userId;
 
+    @SensitiveData(type = SensitiveData.SensitiveType.PHONE)
     private String phone;
 
     private String nickname;

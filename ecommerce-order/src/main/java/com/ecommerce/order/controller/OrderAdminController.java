@@ -1,8 +1,10 @@
 package com.ecommerce.order.controller;
 
+import com.ecommerce.common.core.annotation.AuditLog;
 import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.result.Result;
 import com.ecommerce.common.web.annotation.RequireLogin;
+import com.ecommerce.common.web.annotation.ShowSensitive;
 import com.ecommerce.order.dto.OrderDTO;
 import com.ecommerce.order.dto.OrderPageRequest;
 import com.ecommerce.order.dto.OrderShipRequest;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/order/admin")
 @RequiredArgsConstructor
 @RequireLogin
+@ShowSensitive
 public class OrderAdminController {
 
     private final OrderService orderService;
@@ -29,6 +32,7 @@ public class OrderAdminController {
         return Result.success(orderService.getOrderDetailAdmin(orderId));
     }
 
+    @AuditLog(module = "订单", operation = "发货", description = "管理员订单发货")
     @PutMapping("/{orderId}/ship")
     public Result<Void> shipOrder(@PathVariable Long orderId,
                                   @RequestBody @Valid OrderShipRequest request) {

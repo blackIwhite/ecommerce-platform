@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -80,6 +81,22 @@ public final class JsonUtils {
             return OBJECT_MAPPER.readValue(json, typeReference);
         } catch (JsonProcessingException e) {
             log.error("Deserialize JSON to object failed: {}", e.getMessage(), e);
+            throw new RuntimeException("JSON deserialization error", e);
+        }
+    }
+
+    /**
+     * Deserialize a JSON array string to a List of the specified element type.
+     */
+    public static <T> java.util.List<T> toList(String json, Class<T> elementClass) {
+        if (json == null || json.isEmpty()) {
+            return null;
+        }
+        try {
+            JavaType listType = OBJECT_MAPPER.getTypeFactory().constructCollectionType(java.util.List.class, elementClass);
+            return OBJECT_MAPPER.readValue(json, listType);
+        } catch (JsonProcessingException e) {
+            log.error("Deserialize JSON to list failed: {}", e.getMessage(), e);
             throw new RuntimeException("JSON deserialization error", e);
         }
     }

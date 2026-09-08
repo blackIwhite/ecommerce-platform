@@ -1,16 +1,20 @@
 package com.ecommerce.user.controller;
 
+import com.ecommerce.common.core.annotation.AuditLog;
 import com.ecommerce.common.core.page.PageResult;
 import com.ecommerce.common.core.result.Result;
 import com.ecommerce.common.web.annotation.RequireLogin;
+import com.ecommerce.common.web.annotation.ShowSensitive;
 import com.ecommerce.common.web.context.UserContextHolder;
 import com.ecommerce.user.dto.UserAddressCreateRequest;
 import com.ecommerce.user.dto.UserAddressDTO;
 import com.ecommerce.user.dto.UserAddressUpdateRequest;
 import com.ecommerce.user.dto.UserDTO;
+import com.ecommerce.user.dto.UserFavoriteDTO;
 import com.ecommerce.user.dto.UserPageRequest;
 import com.ecommerce.user.dto.UserUpdateRequest;
 import com.ecommerce.user.service.UserAddressService;
+import com.ecommerce.user.service.UserFavoriteService;
 import com.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +29,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserAddressService userAddressService;
+    private final UserFavoriteService userFavoriteService;
 
     @GetMapping("/{userId}")
     public Result<UserDTO> getUserById(@PathVariable Long userId) {
@@ -37,6 +42,7 @@ public class UserController {
         return Result.success(userService.getUserById(UserContextHolder.getUserId()));
     }
 
+    @AuditLog(module = "用户", operation = "更新用户", description = "更新用户信息")
     @RequireLogin
     @PutMapping
     public Result<Void> updateUser(@RequestBody @Valid UserUpdateRequest request) {
@@ -45,6 +51,7 @@ public class UserController {
     }
 
     @RequireLogin
+    @ShowSensitive
     @GetMapping("/page")
     public Result<PageResult<UserDTO>> pageUsers(UserPageRequest request) {
         return Result.success(userService.pageUsers(request));
@@ -79,5 +86,25 @@ public class UserController {
     public Result<Void> deleteAddress(@PathVariable Long addressId) {
         userAddressService.deleteAddress(addressId);
         return Result.success();
+    }
+
+    @RequireLogin
+    @PostMapping("/favorite/toggle")
+    public Result<Boolean> toggleFavorite(@RequestParam Long spuId) {
+        return Result.success(userFavoriteService.toggleFavorite(spuId));
+    }
+
+    @RequireLogin
+    @GetMapping("/favorite/check")
+    public Result<Boolean> checkFavorite(@RequestParam Long spuId) {
+        return Result.success(userFavoriteService.isFavorite(spuId));
+    }
+
+    @RequireLogin
+    @GetMapping("/favorite/list")
+    public Result<PageResult<UserFavoriteDTO>> listFavorites(
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        return Result.success(userFavoriteService.listFavorites(pageNum, pageSize));
     }
 }

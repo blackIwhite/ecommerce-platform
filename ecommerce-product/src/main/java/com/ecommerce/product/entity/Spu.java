@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -24,4 +26,9 @@ public class Spu extends BaseEntity {
     private String images;
     /** 0=draft, 1=on-shelf, 2=off-shelf */
     private Integer status;
+    private Integer salesCount;
+    private Integer viewCount;
+    private BigDecimal minPrice;
+    private BigDecimal avgRating;
+    private Integer reviewCount;
 }

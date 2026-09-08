@@ -35,6 +35,14 @@
             <artifactId>ecommerce-api-product</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.ecommerce</groupId>
+            <artifactId>ecommerce-api-order</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ecommerce</groupId>
+            <artifactId>ecommerce-api-user</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>

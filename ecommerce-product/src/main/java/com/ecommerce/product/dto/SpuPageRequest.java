@@ -20,4 +20,5 @@ public class SpuPageRequest extends PageQuery implements Serializable {
     private Long brandId;
     private Integer status;
     private String keyword;
+    private String sort;
 }
