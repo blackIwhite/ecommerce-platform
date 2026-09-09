@@ -59,6 +59,14 @@ public class UserController {
         return Result.success(userService.pageUsers(request));
     }
 
+    @AuditLog(module = "用户", operation = "更新用户状态", description = "更新用户状态")
+    @RequireLogin
+    @PutMapping("/{userId}/status")
+    public Result<Void> updateUserStatus(@PathVariable Long userId, @RequestParam Integer status) {
+        userService.updateUserStatus(userId, status);
+        return Result.success();
+    }
+
     @RequireLogin
     @GetMapping("/address/list")
     public Result<List<UserAddressDTO>> getAddressList() {

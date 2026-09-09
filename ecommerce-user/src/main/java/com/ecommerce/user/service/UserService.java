@@ -12,4 +12,6 @@ public interface UserService {
     void updateUser(UserUpdateRequest request);
 
     PageResult<UserDTO> pageUsers(UserPageRequest request);
+
+    void updateUserStatus(Long userId, Integer status);
 }

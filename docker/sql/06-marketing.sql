@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS t_promotion (
 CREATE TABLE IF NOT EXISTS t_flash_sale_item (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     promotion_id BIGINT NOT NULL COMMENT 'Promotion ID',
+    spu_id BIGINT NOT NULL DEFAULT 0 COMMENT 'SPU ID',
     sku_id BIGINT NOT NULL COMMENT 'SKU ID',
     flash_price DECIMAL(10,2) NOT NULL COMMENT 'Flash sale price',
     total_stock INT NOT NULL COMMENT 'Total flash sale stock',

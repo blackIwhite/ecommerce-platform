@@ -74,7 +74,7 @@ public class FlashSaleServiceImpl implements FlashSaleService {
     @Transactional(rollbackFor = Exception.class)
     public void addItem(FlashSaleItemDTO dto) {
         FlashSaleItem item = FlashSaleItem.builder()
-                .promotionId(dto.getSpuId() != null ? dto.getSpuId() : 0L)
+                .promotionId(dto.getPromotionId() != null ? dto.getPromotionId() : 0L)
                 .spuId(dto.getSpuId())
                 .skuId(dto.getSkuId())
                 .flashPrice(dto.getFlashPrice())
@@ -148,6 +148,7 @@ public class FlashSaleServiceImpl implements FlashSaleService {
     private FlashSaleItemDTO toDTO(FlashSaleItem item) {
         return FlashSaleItemDTO.builder()
                 .id(item.getId())
+                .promotionId(item.getPromotionId())
                 .spuId(item.getSpuId())
                 .skuId(item.getSkuId())
                 .flashPrice(item.getFlashPrice())

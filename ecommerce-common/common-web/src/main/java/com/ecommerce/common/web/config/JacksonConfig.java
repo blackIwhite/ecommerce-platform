@@ -39,7 +39,9 @@ public class JacksonConfig {
             builder.serializerByType(java.time.LocalDate.class, new LocalDateSerializer(dateFormatter));
             builder.serializerByType(java.time.LocalTime.class, new LocalTimeSerializer(timeFormatter));
 
-            builder.deserializerByType(java.time.LocalDateTime.class, new LocalDateTimeDeserializer(dateTimeFormatter));
+            // Support both ISO-8601 and custom pattern for deserialization (frontend sends ISO-8601)
+            builder.deserializerByType(java.time.LocalDateTime.class, 
+                new LocalDateTimeDeserializer(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             builder.deserializerByType(java.time.LocalDate.class, new LocalDateDeserializer(dateFormatter));
             builder.deserializerByType(java.time.LocalTime.class, new LocalTimeDeserializer(timeFormatter));
 

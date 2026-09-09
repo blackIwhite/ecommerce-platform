@@ -37,16 +37,24 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDTO> getCategoryTree() {
-        Object cached = redisUtils.get(CATEGORY_TREE_CACHE_KEY);
-        if (cached instanceof List) {
-            return (List<CategoryDTO>) cached;
+        try {
+            Object cached = redisUtils.get(CATEGORY_TREE_CACHE_KEY);
+            if (cached instanceof List) {
+                return (List<CategoryDTO>) cached;
+            }
+        } catch (Exception e) {
+            log.warn("Failed to read category cache, falling back to database", e);
         }
 
         List<Category> allCategories = categoryMapper.selectList(
                 new LambdaQueryWrapper<Category>().orderByAsc(Category::getSort));
         List<CategoryDTO> tree = buildTree(allCategories, 0L);
 
-        redisUtils.set(CATEGORY_TREE_CACHE_KEY, tree, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+        try {
+            redisUtils.set(CATEGORY_TREE_CACHE_KEY, tree, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.warn("Failed to write category cache", e);
+        }
         return tree;
     }
 

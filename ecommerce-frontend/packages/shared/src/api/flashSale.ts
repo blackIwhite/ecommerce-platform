@@ -1,23 +1,23 @@
-import { get, post } from './request'
+import { get, post, put, del } from './request'
 import type { FlashSaleItemDTO } from '../types/index'
 
 export const flashSaleApi = {
   getActiveItems: (promotionId: number) =>
-    get<FlashSaleItemDTO[]>(`/marketing/marketing/flash-sale/active/${promotionId}`),
+    get<FlashSaleItemDTO[]>(`/marketing/marketing/flash-sale/active`, { promotionId }),
 
   getItemDetail: (itemId: number) =>
-    get<FlashSaleItemDTO>(`/marketing/marketing/flash-sale/item/${itemId}`),
+    get<FlashSaleItemDTO>(`/marketing/marketing/flash-sale/${itemId}`),
 
   // Admin APIs
   listItems: (promotionId: number) =>
-    get<FlashSaleItemDTO[]>(`/marketing/marketing/admin/flash-sale/items/${promotionId}`),
+    get<any>(`/marketing/marketing/admin/flash-sale/list`, { promotionId }).then(res => res.list ?? []),
 
   addItem: (data: Partial<FlashSaleItemDTO>) =>
-    post<void>('/marketing/marketing/admin/flash-sale/items', data),
+    post<void>('/marketing/marketing/admin/flash-sale', data),
 
   updateItem: (id: number, data: Partial<FlashSaleItemDTO>) =>
-    post<void>(`/marketing/marketing/admin/flash-sale/items/${id}`, data),
+    put<void>('/marketing/marketing/admin/flash-sale', { ...data, id }),
 
   deleteItem: (id: number) =>
-    post<void>(`/marketing/marketing/admin/flash-sale/items/${id}/delete`),
+    del<void>(`/marketing/marketing/admin/flash-sale/${id}`),
 }

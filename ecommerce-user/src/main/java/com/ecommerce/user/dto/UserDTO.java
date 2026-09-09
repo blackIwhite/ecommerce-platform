@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -20,4 +21,5 @@ public class UserDTO implements Serializable {
     private String nickname;
     private String avatar;
     private Integer status;
+    private LocalDateTime createTime;
 }

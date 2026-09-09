@@ -42,6 +42,7 @@ public class PromotionDTO implements Serializable {
     @AllArgsConstructor
     public static class FlashSaleItemDTO implements Serializable {
         private Long id;
+        private Long promotionId;
         private Long spuId;
         private Long skuId;
         private java.math.BigDecimal flashPrice;

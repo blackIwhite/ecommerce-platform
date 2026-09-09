@@ -52,9 +52,13 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public List<BrandDTO> listAllEnabled() {
-        Object cached = redisUtils.get(BRAND_ALL_CACHE_KEY);
-        if (cached instanceof List) {
-            return (List<BrandDTO>) cached;
+        try {
+            Object cached = redisUtils.get(BRAND_ALL_CACHE_KEY);
+            if (cached instanceof List) {
+                return (List<BrandDTO>) cached;
+            }
+        } catch (Exception e) {
+            log.warn("Failed to read brand cache, falling back to database", e);
         }
 
         LambdaQueryWrapper<Brand> wrapper = new LambdaQueryWrapper<>();
@@ -63,7 +67,11 @@ public class BrandServiceImpl implements BrandService {
                 .map(this::toBrandDTO)
                 .toList();
 
-        redisUtils.set(BRAND_ALL_CACHE_KEY, list, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+        try {
+            redisUtils.set(BRAND_ALL_CACHE_KEY, list, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.warn("Failed to write brand cache", e);
+        }
         return list;
     }
 

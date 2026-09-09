@@ -90,6 +90,17 @@ public class UserServiceImpl implements UserService {
         return PageResult.of(dtoList, result.getTotal(), request.getPageNum(), request.getPageSize());
     }
 
+    @Override
+    public void updateUserStatus(Long userId, Integer status) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+        user.setStatus(status);
+        userMapper.updateById(user);
+        redisUtils.delete(USER_CACHE_KEY_PREFIX + userId);
+    }
+
     private UserDTO toUserDTO(User user) {
         return UserDTO.builder()
                 .userId(user.getId())
@@ -97,6 +108,7 @@ public class UserServiceImpl implements UserService {
                 .nickname(user.getNickname())
                 .avatar(user.getAvatar())
                 .status(user.getStatus())
+                .createTime(user.getCreateTime())
                 .build();
     }
 }
