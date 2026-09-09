@@ -3,7 +3,8 @@ export function formatPrice(price: number): string {
 }
 
 export function formatDate(date: string): string {
-  return new Date(date).toLocaleString('zh-CN')
+  if (!date) return ''
+  return new Date(date.replace(' ', 'T')).toLocaleString('zh-CN')
 }
 
 export function getToken(): string | null {
