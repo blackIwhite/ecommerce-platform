@@ -130,6 +130,31 @@ services:
     networks:
       - ecommerce-network
 
+  seata:
+    image: seataio/seata-server:2.0.0
+    container_name: ecommerce-seata
+    ports:
+      - "8091:8091"
+      - "7091:7091"
+    environment:
+      SEATA_PORT: 8091
+      SEATA_IP: host.docker.internal
+      STORE_MODE: file
+    volumes:
+      - seata-data:/root/seata-data
+    networks:
+      - ecommerce-network
+
+  zipkin:
+    image: openzipkin/zipkin:3
+    container_name: ecommerce-zipkin
+    ports:
+      - "9411:9411"
+    environment:
+      STORAGE_TYPE: mem
+    networks:
+      - ecommerce-network
+
 volumes:
   mysql-data:
   redis-data:
@@ -138,6 +163,7 @@ volumes:
   prometheus-data:
   grafana-data:
   minio-data:
+  seata-data:
 
 networks:
   ecommerce-network:
