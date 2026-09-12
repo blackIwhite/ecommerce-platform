@@ -31,41 +31,41 @@ export interface OrderConfirmResult {
 
 export const orderApi = {
   confirm: (data: OrderSubmitParams) =>
-    post<OrderConfirmResult>('/order/order/confirm', data),
+    post<OrderConfirmResult>('/order/confirm', data),
 
   submit: (data: OrderSubmitParams) =>
-    post<number>('/order/order/submit', data),
+    post<number>('/order/submit', data),
 
   list: (params: OrderPageParams) =>
-    get<PageResult<OrderDTO>>('/order/order/list', params),
+    get<PageResult<OrderDTO>>('/order/list', params),
 
   getDetail: (orderId: number) =>
-    get<OrderDTO>(`/order/order/${orderId}`),
+    get<OrderDTO>(`/order/${orderId}`),
 
   getStatus: (orderId: number) =>
-    get<number>(`/order/order/status/${orderId}`),
+    get<number>(`/order/status/${orderId}`),
 
   cancel: (orderId: number, reason?: string) =>
-    put<void>(`/order/order/${orderId}/cancel`, { cancelReason: reason }),
+    put<void>(`/order/${orderId}/cancel`, { cancelReason: reason }),
 
   pay: (orderId: number) =>
-    put<void>(`/order/order/${orderId}/pay`),
+    put<void>(`/order/${orderId}/pay`),
 
   receive: (orderId: number) =>
-    put<void>(`/order/order/${orderId}/receive`),
+    put<void>(`/order/${orderId}/receive`),
 
   adminList: (params: OrderPageParams) =>
-    get<PageResult<OrderDTO>>('/order/order/admin/list', params),
+    get<PageResult<OrderDTO>>('/order/admin/list', params),
 
   adminDetail: (orderId: number) =>
-    get<OrderDTO>(`/order/order/admin/${orderId}`),
+    get<OrderDTO>(`/order/admin/${orderId}`),
 
   adminShip: (orderId: number, trackingNo: string) =>
-    put<void>(`/order/order/admin/${orderId}/ship`, { trackingNo }),
+    put<void>(`/order/admin/${orderId}/ship`, { trackingNo }),
 
   getPayment: (orderId: number) =>
-    get<PaymentDTO>(`/order/order/payment/${orderId}`),
+    get<PaymentDTO>(`/order/payment/${orderId}`),
 
   getLogistics: (orderId: number) =>
-    get<LogisticsTraceDTO>(`/order/order/${orderId}/logistics`),
+    get<LogisticsTraceDTO>(`/order/${orderId}/logistics`),
 }

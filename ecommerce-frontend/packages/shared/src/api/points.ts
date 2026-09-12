@@ -3,15 +3,15 @@ import type { PageResult, PointsAccountDTO, PointsLogDTO, PointsRuleDTO } from '
 
 export const pointsApi = {
   getAccount: () =>
-    get<PointsAccountDTO>('/marketing/marketing/points/account'),
+    get<PointsAccountDTO>('/marketing/points/account'),
 
   getLogs: (params: { type?: number; pageNum?: number; pageSize?: number }) =>
-    get<PageResult<PointsLogDTO>>('/marketing/marketing/points/logs', params),
+    get<PageResult<PointsLogDTO>>('/marketing/points/logs', params),
 
   // Admin APIs
   listRules: () =>
-    get<PointsRuleDTO[]>('/marketing/marketing/admin/points/rules'),
+    get<PointsRuleDTO[]>('/marketing/admin/points/rules'),
 
   updateRule: (id: number, data: Partial<PointsRuleDTO>) =>
-    put<void>(`/marketing/marketing/admin/points/rules/${id}`, data),
+    put<void>(`/marketing/admin/points/rules/${id}`, data),
 }

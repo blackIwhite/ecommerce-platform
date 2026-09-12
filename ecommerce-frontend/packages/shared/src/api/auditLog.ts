@@ -27,7 +27,7 @@ export interface AuditLogQuery {
 
 export const auditLogApi = {
   list: (params: AuditLogQuery) =>
-    get<AuditLogItem[]>('/user/user/admin/audit-log/list', params),
+    get<AuditLogItem[]>('/user/admin/audit-log/list', params),
   count: (params: { serviceName?: string; module?: string }) =>
-    get<{ total: number }>('/user/user/admin/audit-log/count', params),
+    get<{ total: number }>('/user/admin/audit-log/count', params),
 }

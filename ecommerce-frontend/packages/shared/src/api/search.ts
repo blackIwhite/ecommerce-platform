@@ -19,20 +19,20 @@ export const searchApi = {
     keyword?: string; categoryId?: number; brandId?: number
     minPrice?: number; maxPrice?: number; sortBy?: string
     pageNum?: number; pageSize?: number
-  }) => get<PageResult<SpuDTO>>('/product/product/search', params),
+  }) => get<PageResult<SpuDTO>>('/product/search', params),
 
   getSuggestions: (prefix: string) =>
-    get<string[]>('/product/product/search/suggestions', { prefix }),
+    get<string[]>('/product/search/suggestions', { prefix }),
 
   getHotSearches: () =>
-    get<HotSearchDTO[]>('/product/product/search/hot'),
+    get<HotSearchDTO[]>('/product/search/hot'),
 
   getHistory: () =>
-    get<string[]>('/product/product/search/history'),
+    get<string[]>('/product/search/history'),
 
   clearHistory: () =>
-    del<void>('/product/product/search/history'),
+    del<void>('/product/search/history'),
 
   record: (keyword: string) =>
-    post<void>('/product/product/search/record', { keyword }),
+    post<void>('/product/search/record', { keyword }),
 }

@@ -35,20 +35,20 @@ export interface InvoiceApplyRequest {
 
 export const invoiceApi = {
   apply: (data: InvoiceApplyRequest) =>
-    post<void>('/order/order/invoice/apply', data),
+    post<void>('/order/invoice/apply', data),
 
   getMyInvoices: (params: { pageNum?: number; pageSize?: number }) =>
-    get<PageResult<InvoiceDTO>>('/order/order/invoice/my', params),
+    get<PageResult<InvoiceDTO>>('/order/invoice/my', params),
 
   getInvoice: (id: number) =>
-    get<InvoiceDTO>(`/order/order/invoice/${id}`),
+    get<InvoiceDTO>(`/order/invoice/${id}`),
 
   listAdmin: (params: { pageNum?: number; pageSize?: number; status?: number }) =>
-    get<PageResult<InvoiceDTO>>('/order/order/admin/invoice/list', params),
+    get<PageResult<InvoiceDTO>>('/order/admin/invoice/list', params),
 
   issue: (id: number, data: { invoiceNo: string; invoiceUrl: string }) =>
-    put<void>(`/order/order/admin/invoice/${id}/issue`, data),
+    put<void>(`/order/admin/invoice/${id}/issue`, data),
 
   reject: (id: number, data: { reason: string }) =>
-    put<void>(`/order/order/admin/invoice/${id}/reject`, data),
+    put<void>(`/order/admin/invoice/${id}/reject`, data),
 }

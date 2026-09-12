@@ -24,17 +24,17 @@ export interface UserInfo {
 }
 
 export const authApi = {
-  login: (data: LoginParams) => post<LoginResult>('/auth/auth/login', data),
+  login: (data: LoginParams) => post<LoginResult>('/auth/login', data),
 
   register: (data: { phone: string; password: string; smsCode: string }) =>
-    post<LoginResult>('/auth/auth/register', data),
+    post<LoginResult>('/auth/register', data),
 
-  logout: () => post<void>('/auth/auth/logout'),
+  logout: () => post<void>('/auth/logout'),
 
-  getUserInfo: () => get<UserInfo>('/auth/auth/info'),
+  getUserInfo: () => get<UserInfo>('/auth/info'),
 
-  sendSms: (data: { phone: string }) => post<void>('/auth/auth/sms/send', data),
+  sendSms: (data: { phone: string }) => post<void>('/auth/sms/send', data),
 
   refresh: (refreshToken: string) =>
-    post<LoginResult>('/auth/auth/refresh', { refreshToken }),
+    post<LoginResult>('/auth/refresh', { refreshToken }),
 }

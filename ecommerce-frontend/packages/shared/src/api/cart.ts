@@ -17,14 +17,14 @@ export interface CartAddParams {
 }
 
 export const cartApi = {
-  list: () => get<CartItemDTO[]>('/cart/cart/list'),
+  list: () => get<CartItemDTO[]>('/cart/list'),
 
-  add: (data: CartAddParams) => post<void>('/cart/cart/add', data),
+  add: (data: CartAddParams) => post<void>('/cart/add', data),
 
   updateQuantity: (cartItemId: number, quantity: number) =>
     request.put<void>(`/cart/cart/${cartItemId}/quantity`, null, { params: { quantity } }),
 
   remove: (cartItemId: number) => del<void>(`/cart/cart/${cartItemId}`),
 
-  clear: () => del<void>('/cart/cart/clear'),
+  clear: () => del<void>('/cart/clear'),
 }

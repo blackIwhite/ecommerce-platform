@@ -32,17 +32,17 @@ export interface BehaviorRecordRequest {
 
 export const behaviorApi = {
   record: (data: BehaviorRecordRequest) =>
-    post<void>('/user/user/behavior/record', data),
+    post<void>('/user/behavior/record', data),
 
   getBrowseHistory: (params: { pageNum?: number; pageSize?: number }) =>
-    get<PageResult<BrowseHistoryDTO>>('/user/user/behavior/browse-history', params),
+    get<PageResult<BrowseHistoryDTO>>('/user/behavior/browse-history', params),
 
   clearBrowseHistory: () =>
-    del<void>('/user/user/behavior/browse-history'),
+    del<void>('/user/behavior/browse-history'),
 
   getBehaviorLogs: (params: { action?: string; pageNum?: number; pageSize?: number }) =>
-    get<PageResult<BehaviorLogDTO>>('/user/user/behavior/logs', params),
+    get<PageResult<BehaviorLogDTO>>('/user/behavior/logs', params),
 
   getBehaviorStats: () =>
-    get<Record<string, number>>('/user/user/behavior/stats'),
+    get<Record<string, number>>('/user/behavior/stats'),
 }

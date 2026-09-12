@@ -13,26 +13,26 @@ export interface SpuPageParams {
 
 export const productApi = {
   getSpuPage: (params: SpuPageParams) =>
-    get<PageResult<SpuDTO>>('/product/product/spu/page', params),
+    get<PageResult<SpuDTO>>('/product/spu/page', params),
 
   getSpuDetail: (spuId: number) =>
-    get<SpuDTO>(`/product/product/spu/${spuId}`),
+    get<SpuDTO>(`/product/spu/${spuId}`),
 
   getCategoryTree: () =>
-    get<CategoryDTO[]>('/product/product/category/tree'),
+    get<CategoryDTO[]>('/product/category/tree'),
 
   getBrandList: () =>
-    get<BrandDTO[]>('/product/product/brand/list'),
+    get<BrandDTO[]>('/product/brand/list'),
 
   createSpu: (data: any) =>
-    post<number>('/product/product/admin/spu', data),
+    post<number>('/product/admin/spu', data),
 
   updateSpu: (data: any) =>
-    put<void>('/product/product/admin/spu', data),
+    put<void>('/product/admin/spu', data),
 
   updateSpuStatus: (spuId: number, status: number) =>
-    request.put<void>(`/product/product/admin/spu/${spuId}/status`, null, { params: { status } }),
+    request.put<void>(`/product/admin/spu/${spuId}/status`, null, { params: { status } }),
 
   reindexAll: () =>
-    post<void>('/product/product/admin/spu/reindex'),
+    post<void>('/product/admin/spu/reindex'),
 }

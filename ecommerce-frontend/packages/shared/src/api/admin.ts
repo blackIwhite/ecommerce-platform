@@ -4,44 +4,44 @@ import type { PageResult, AdminUserDTO, RoleDTO, MenuDTO, PermissionDTO } from '
 export const adminApi = {
   login: (data: { username: string; password: string }) =>
     post<{ accessToken: string; refreshToken: string; adminUser: AdminUserDTO }>(
-      '/auth/auth/admin/login', data),
+      '/auth/admin/login', data),
 
   getInfo: () =>
-    get<AdminUserDTO>('/auth/auth/admin/info'),
+    get<AdminUserDTO>('/auth/admin/info'),
 
   getMenus: () =>
-    get<MenuDTO[]>('/auth/auth/admin/menus'),
+    get<MenuDTO[]>('/auth/admin/menus'),
 
   listAdmins: (params: { pageNum?: number; pageSize?: number }) =>
-    get<PageResult<AdminUserDTO>>('/auth/auth/admin/users', params),
+    get<PageResult<AdminUserDTO>>('/auth/admin/users', params),
 
   createAdmin: (data: { username: string; password: string; realName: string; phone?: string; email?: string; roleIds: number[] }) =>
-    post<void>('/auth/auth/admin/users', data),
+    post<void>('/auth/admin/users', data),
 
   updateAdminStatus: (id: number, status: number) =>
-    put<void>(`/auth/auth/admin/users/${id}/status`, { status }),
+    put<void>(`/auth/admin/users/${id}/status`, { status }),
 
   resetPassword: (id: number, newPassword: string) =>
-    put<void>(`/auth/auth/admin/users/${id}/password`, { newPassword }),
+    put<void>(`/auth/admin/users/${id}/password`, { newPassword }),
 
   deleteAdmin: (id: number) =>
-    del<void>(`/auth/auth/admin/users/${id}`),
+    del<void>(`/auth/admin/users/${id}`),
 
   listRoles: () =>
-    get<RoleDTO[]>('/auth/auth/admin/roles'),
+    get<RoleDTO[]>('/auth/admin/roles'),
 
   createRole: (data: Partial<RoleDTO>) =>
-    post<void>('/auth/auth/admin/roles', data),
+    post<void>('/auth/admin/roles', data),
 
   updateRole: (id: number, data: Partial<RoleDTO>) =>
-    put<void>(`/auth/auth/admin/roles/${id}`, data),
+    put<void>(`/auth/admin/roles/${id}`, data),
 
   deleteRole: (id: number) =>
-    del<void>(`/auth/auth/admin/roles/${id}`),
+    del<void>(`/auth/admin/roles/${id}`),
 
   listMenus: () =>
-    get<MenuDTO[]>('/auth/auth/admin/menus/tree'),
+    get<MenuDTO[]>('/auth/admin/menus/tree'),
 
   listPermissions: () =>
-    get<PermissionDTO[]>('/auth/auth/admin/menus/permissions'),
+    get<PermissionDTO[]>('/auth/admin/menus/permissions'),
 }

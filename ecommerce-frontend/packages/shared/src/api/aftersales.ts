@@ -19,41 +19,41 @@ export interface AftersalesPageParams {
 
 export const aftersalesApi = {
   apply: (data: AftersalesApplyParams) =>
-    post<number>('/aftersales/aftersales/apply', data),
+    post<number>('/aftersales/apply', data),
 
   cancel: (id: number) =>
-    put<void>(`/aftersales/aftersales/${id}/cancel`),
+    put<void>(`/aftersales/${id}/cancel`),
 
   fillTracking: (id: number, trackingNo: string, company: string) =>
-    put<void>(`/aftersales/aftersales/${id}/tracking`, { trackingNo, company }),
+    put<void>(`/aftersales/${id}/tracking`, { trackingNo, company }),
 
   list: (params: AftersalesPageParams) =>
-    get<PageResult<AftersalesOrderDTO>>('/aftersales/aftersales/list', params),
+    get<PageResult<AftersalesOrderDTO>>('/aftersales/list', params),
 
   getDetail: (id: number) =>
-    get<AftersalesOrderDTO>(`/aftersales/aftersales/${id}`),
+    get<AftersalesOrderDTO>(`/aftersales/${id}`),
 
   getLogs: (id: number) =>
-    get<any[]>(`/aftersales/aftersales/${id}/logs`),
+    get<any[]>(`/aftersales/${id}/logs`),
 
   adminList: (params: AftersalesPageParams) =>
-    get<PageResult<AftersalesOrderDTO>>('/aftersales/aftersales/admin/list', params),
+    get<PageResult<AftersalesOrderDTO>>('/aftersales/admin/list', params),
 
   adminDetail: (id: number) =>
-    get<AftersalesOrderDTO>(`/aftersales/aftersales/admin/${id}`),
+    get<AftersalesOrderDTO>(`/aftersales/admin/${id}`),
 
   adminApprove: (id: number, handler?: string) =>
-    put<void>(`/aftersales/aftersales/admin/${id}/approve`, { handler: handler || 'admin' }),
+    put<void>(`/aftersales/admin/${id}/approve`, { handler: handler || 'admin' }),
 
   adminReject: (id: number, remark: string, handler?: string) =>
-    put<void>(`/aftersales/aftersales/admin/${id}/reject`, { handler: handler || 'admin', remark }),
+    put<void>(`/aftersales/admin/${id}/reject`, { handler: handler || 'admin', remark }),
 
   adminReceive: (id: number, handler?: string) =>
-    put<void>(`/aftersales/aftersales/admin/${id}/receive`, { handler: handler || 'admin' }),
+    put<void>(`/aftersales/admin/${id}/receive`, { handler: handler || 'admin' }),
 
   adminRefund: (id: number, handler?: string) =>
-    put<void>(`/aftersales/aftersales/admin/${id}/refund`, { handler: handler || 'admin' }),
+    put<void>(`/aftersales/admin/${id}/refund`, { handler: handler || 'admin' }),
 
   adminShipExchange: (id: number, trackingNo: string, company: string, handler?: string) =>
-    put<void>(`/aftersales/aftersales/admin/${id}/ship-exchange`, { handler: handler || 'admin', trackingNo, company }),
+    put<void>(`/aftersales/admin/${id}/ship-exchange`, { handler: handler || 'admin', trackingNo, company }),
 }
