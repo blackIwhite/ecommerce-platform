@@ -1,0 +1,159 @@
+digraph DatabaseRelationshipDiagram {
+    rankdir=TB;
+    node [shape=record, style=filled, fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=8, color="#666666"];
+    
+    // Graph settings
+    graph [label="电商平台数据库关系图\n共 6 个数据库，39 张表", 
+           labelloc=t, 
+           fontsize=16, 
+           fontname="Arial",
+           nodesep=0.5,
+           ranksep=1.0];
+
+    // Product Database Cluster
+    subgraph cluster_product {
+        label="ecommerce_product (商品库)";
+        style=filled;
+        color="#e3f2fd";
+        fontname="Arial";
+        fontsize=12;
+        
+        t_brand [label="{t_brand|+ id: bigint (PK)\l+ name: varchar\l+ logo: varchar\l+ sort: int}", fillcolor="#bbdefb"];
+        t_category [label="{t_category|+ id: bigint (PK)\l+ name: varchar\l+ parent_id: bigint\l+ level: int\l+ sort: int}", fillcolor="#bbdefb"];
+        t_spu [label="{t_spu|+ id: bigint (PK)\l+ category_id: bigint (FK)\l+ brand_id: bigint (FK)\l+ name: varchar\l+ subtitle: varchar\l+ main_image: varchar\l+ price: decimal\l+ status: int}", fillcolor="#bbdefb"];
+        t_sku [label="{t_sku|+ id: bigint (PK)\l+ spu_id: bigint (FK)\l+ name: varchar\l+ image: varchar\l+ price: decimal\l+ original_price: decimal\l+ stock: int\l+ status: int}", fillcolor="#bbdefb"];
+        t_review [label="{t_review|+ id: bigint (PK)\l+ spu_id: bigint (FK)\l+ user_id: bigint (FK)\l+ order_id: bigint (FK)\l+ rating: int\l+ content: varchar\l+ images: varchar}", fillcolor="#bbdefb"];
+    }
+
+    // User Database Cluster
+    subgraph cluster_user {
+        label="ecommerce_user (用户库)";
+        style=filled;
+        color="#f3e5f5";
+        fontname="Arial";
+        fontsize=12;
+        
+        t_user [label="{t_user|+ id: bigint (PK)\l+ phone: varchar\l+ password: varchar\l+ nickname: varchar\l+ avatar: varchar\l+ gender: int\l+ birthday: date\l+ status: int}", fillcolor="#e1bee7"];
+        t_user_address [label="{t_user_address|+ id: bigint (PK)\l+ user_id: bigint (FK)\l+ receiver: varchar\l+ phone: varchar\l+ province: varchar\l+ city: varchar\l+ district: varchar\l+ detail: varchar\l+ is_default: int}", fillcolor="#e1bee7"];
+        t_user_favorite [label="{t_user_favorite|+ id: bigint (PK)\l+ user_id: bigint (FK)\l+ spu_id: bigint (FK)}", fillcolor="#e1bee7"];
+        
+        t_admin_user [label="{t_admin_user|+ id: bigint (PK)\l+ username: varchar\l+ password: varchar\l+ real_name: varchar\l+ avatar: varchar\l+ status: int}", fillcolor="#ce93d8"];
+        t_role [label="{t_role|+ id: bigint (PK)\l+ name: varchar\l+ code: varchar\l+ description: varchar\l+ status: int}", fillcolor="#ce93d8"];
+        t_permission [label="{t_permission|+ id: bigint (PK)\l+ name: varchar\l+ code: varchar\l+ description: varchar}", fillcolor="#ce93d8"];
+        t_menu [label="{t_menu|+ id: bigint (PK)\l+ name: varchar\l+ path: varchar\l+ component: varchar\l+ parent_id: bigint\l+ type: int\l+ sort: int}", fillcolor="#ce93d8"];
+        t_admin_user_role [label="{t_admin_user_role|+ id: bigint (PK)\l+ admin_user_id: bigint (FK)\l+ role_id: bigint (FK)}", fillcolor="#ce93d8"];
+        t_role_permission [label="{t_role_permission|+ id: bigint (PK)\l+ role_id: bigint (FK)\l+ permission_id: bigint (FK)}", fillcolor="#ce93d8"];
+        t_role_menu [label="{t_role_menu|+ id: bigint (PK)\l+ role_id: bigint (FK)\l+ menu_id: bigint (FK)}", fillcolor="#ce93d8"];
+    }
+
+    // Order Database Cluster
+    subgraph cluster_order {
+        label="ecommerce_order (订单库)";
+        style=filled;
+        color="#fff3e0";
+        fontname="Arial";
+        fontsize=12;
+        
+        t_order [label="{t_order|+ id: bigint (PK)\l+ order_no: varchar\l+ user_id: bigint (FK)\l+ total_amount: decimal\l+ pay_amount: decimal\l+ freight_amount: decimal\l+ status: int\l+ payment_type: int}", fillcolor="#ffe0b2"];
+        t_order_item [label="{t_order_item|+ id: bigint (PK)\l+ order_id: bigint (FK)\l+ spu_id: bigint (FK)\l+ sku_id: bigint (FK)\l+ spu_name: varchar\l+ sku_name: varchar\l+ image: varchar\l+ price: decimal\l+ quantity: int}", fillcolor="#ffe0b2"];
+        t_order_status_log [label="{t_order_status_log|+ id: bigint (PK)\l+ order_id: bigint (FK)\l+ from_status: int\l+ to_status: int\l+ operator: varchar}", fillcolor="#ffe0b2"];
+        t_cart_item [label="{t_cart_item|+ id: bigint (PK)\l+ user_id: bigint (FK)\l+ sku_id: bigint (FK)\l+ quantity: int\l+ checked: int}", fillcolor="#ffe0b2"];
+        t_payment [label="{t_payment|+ id: bigint (PK)\l+ order_id: bigint (FK)\l+ payment_no: varchar\l+ payment_channel: int\l+ amount: decimal\l+ status: int}", fillcolor="#ffe0b2"];
+        t_aftersales_order [label="{t_aftersales_order|+ id: bigint (PK)\l+ aftersales_no: varchar\l+ order_id: bigint (FK)\l+ user_id: bigint (FK)\l+ type: int\l+ status: int\l+ refund_amount: decimal}", fillcolor="#ffe0b2"];
+        t_aftersales_item [label="{t_aftersales_item|+ id: bigint (PK)\l+ aftersales_order_id: bigint (FK)\l+ order_item_id: bigint (FK)\l+ quantity: int\l+ refund_amount: decimal}", fillcolor="#ffe0b2"];
+        t_aftersales_log [label="{t_aftersales_log|+ id: bigint (PK)\l+ aftersales_order_id: bigint (FK)\l+ action: int\l+ operator: varchar\l+ remark: varchar}", fillcolor="#ffe0b2"];
+    }
+
+    // Inventory Database Cluster
+    subgraph cluster_inventory {
+        label="ecommerce_inventory (库存库)";
+        style=filled;
+        color="#e8f5e9";
+        fontname="Arial";
+        fontsize=12;
+        
+        t_inventory [label="{t_inventory|+ id: bigint (PK)\l+ sku_id: bigint (FK)\l+ stock: int\l+ locked_stock: int\l+ sales: int}", fillcolor="#c8e6c9"];
+        t_inventory_log [label="{t_inventory_log|+ id: bigint (PK)\l+ sku_id: bigint (FK)\l+ order_id: bigint (FK)\l+ change_type: int\l+ quantity: int\l+ description: varchar}", fillcolor="#c8e6c9"];
+    }
+
+    // Marketing Database Cluster
+    subgraph cluster_marketing {
+        label="ecommerce_marketing (营销库)";
+        style=filled;
+        color="#fce4ec";
+        fontname="Arial";
+        fontsize=12;
+        
+        t_coupon_template [label="{t_coupon_template|+ id: bigint (PK)\l+ name: varchar\l+ type: int\l+ amount: decimal\l+ min_purchase: decimal\l+ total_count: int\l+ used_count: int\l+ start_time: date\l+ end_time: date\l+ status: int}", fillcolor="#f8bbd0"];
+        t_user_coupon [label="{t_user_coupon|+ id: bigint (PK)\l+ user_id: bigint (FK)\l+ template_id: bigint (FK)\l+ order_id: bigint (FK)\l+ status: int\l+ use_time: date}", fillcolor="#f8bbd0"];
+        t_promotion [label="{t_promotion|+ id: bigint (PK)\l+ name: varchar\l+ type: int\l+ discount: decimal\l+ min_amount: decimal\l+ start_time: date\l+ end_time: date\l+ status: int}", fillcolor="#f8bbd0"];
+        t_flash_sale_item [label="{t_flash_sale_item|+ id: bigint (PK)\l+ promotion_id: bigint (FK)\l+ spu_id: bigint (FK)\l+ sku_id: bigint (FK)\l+ flash_price: decimal\l+ flash_stock: int\l+ limit_count: int}", fillcolor="#f8bbd0"];
+        t_points_account [label="{t_points_account|+ id: bigint (PK)\l+ user_id: bigint (FK)\l+ points: int\l+ total_points: int\l+ used_points: int}", fillcolor="#f8bbd0"];
+        t_points_log [label="{t_points_log|+ id: bigint (PK)\l+ user_id: bigint (FK)\l+ change_type: int\l+ points: int\l+ description: varchar}", fillcolor="#f8bbd0"];
+        t_points_rule [label="{t_points_rule|+ id: bigint (PK)\l+ name: varchar\l+ earn_ratio: int\l+ use_ratio: int\l+ min_use_points: int}", fillcolor="#f8bbd0"];
+    }
+
+    // File Database Cluster
+    subgraph cluster_file {
+        label="ecommerce_file (文件库)";
+        style=filled;
+        color="#f5f5f5";
+        fontname="Arial";
+        fontsize=12;
+        
+        t_file [label="{t_file|+ id: bigint (PK)\l+ original_name: varchar\l+ file_name: varchar\l+ file_path: varchar\l+ file_type: varchar\l+ file_size: bigint\l+ url: varchar}", fillcolor="#e0e0e0"];
+    }
+
+    // Product Internal Relationships
+    t_category -> t_spu [label="category_id", style=solid];
+    t_brand -> t_spu [label="brand_id", style=solid];
+    t_spu -> t_sku [label="spu_id", style=solid];
+    t_spu -> t_review [label="spu_id", style=solid];
+    t_category -> t_category [label="parent_id (自引用)", style=dashed];
+
+    // User Internal Relationships
+    t_user -> t_user_address [label="user_id", style=solid];
+    t_user -> t_user_favorite [label="user_id", style=solid];
+    t_admin_user -> t_admin_user_role [label="admin_user_id", style=solid];
+    t_role -> t_admin_user_role [label="role_id", style=solid];
+    t_role -> t_role_permission [label="role_id", style=solid];
+    t_permission -> t_role_permission [label="permission_id", style=solid];
+    t_role -> t_role_menu [label="role_id", style=solid];
+    t_menu -> t_role_menu [label="menu_id", style=solid];
+    t_menu -> t_menu [label="parent_id (自引用)", style=dashed];
+
+    // Order Internal Relationships
+    t_order -> t_order_item [label="order_id", style=solid];
+    t_order -> t_order_status_log [label="order_id", style=solid];
+    t_order -> t_payment [label="order_id", style=solid];
+    t_order -> t_aftersales_order [label="order_id", style=solid];
+    t_aftersales_order -> t_aftersales_item [label="aftersales_order_id", style=solid];
+    t_aftersales_order -> t_aftersales_log [label="aftersales_order_id", style=solid];
+
+    // Inventory Internal Relationships
+    t_sku -> t_inventory [label="sku_id", style=solid, color="#4caf50"];
+    t_sku -> t_inventory_log [label="sku_id", style=solid, color="#4caf50"];
+
+    // Marketing Internal Relationships
+    t_promotion -> t_flash_sale_item [label="promotion_id", style=solid];
+    t_user -> t_user_coupon [label="user_id", style=solid, color="#e91e63"];
+    t_coupon_template -> t_user_coupon [label="template_id", style=solid];
+    t_user -> t_points_account [label="user_id", style=solid, color="#e91e63"];
+    t_user -> t_points_log [label="user_id", style=solid, color="#e91e63"];
+
+    // Cross-Database Relationships
+    t_user -> t_order [label="user_id (跨库)", style=dashed, color="#ff5722", penwidth=2];
+    t_user -> t_cart_item [label="user_id (跨库)", style=dashed, color="#ff5722"];
+    t_user -> t_aftersales_order [label="user_id (跨库)", style=dashed, color="#ff5722"];
+    t_user -> t_review [label="user_id (跨库)", style=dashed, color="#ff5722"];
+    
+    t_spu -> t_order_item [label="spu_id (跨库)", style=dashed, color="#ff5722"];
+    t_sku -> t_order_item [label="sku_id (跨库)", style=dashed, color="#ff5722"];
+    t_sku -> t_cart_item [label="sku_id (跨库)", style=dashed, color="#ff5722"];
+    
+    t_spu -> t_flash_sale_item [label="spu_id (跨库)", style=dashed, color="#ff5722"];
+    t_sku -> t_flash_sale_item [label="sku_id (跨库)", style=dashed, color="#ff5722"];
+    
+    t_order -> t_user_coupon [label="order_id (跨库)", style=dashed, color="#ff5722"];
+}

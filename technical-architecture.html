@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>E-Commerce Platform - Technical Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 32px; }
+  h1 { text-align: center; font-size: 28px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px; letter-spacing: 1px; }
+  .subtitle { text-align: center; font-size: 14px; color: #64748b; margin-bottom: 36px; }
+  .arch { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+  .layer { display: flex; align-items: stretch; gap: 0; }
+  .layer-label { width: 120px; min-width: 120px; display: flex; align-items: center; justify-content: center; border-radius: 12px 0 0 12px; font-weight: 700; font-size: 13px; letter-spacing: 2px; writing-mode: horizontal-tb; text-align: center; padding: 12px 8px; }
+  .layer-content { flex: 1; display: flex; flex-wrap: wrap; gap: 10px; padding: 16px; border-radius: 0 12px 12px 0; align-items: center; justify-content: center; }
+
+  .box { border-radius: 10px; padding: 12px 16px; text-align: center; min-width: 120px; position: relative; transition: transform 0.15s; }
+  .box:hover { transform: translateY(-2px); }
+  .box .title { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .box .desc { font-size: 11px; opacity: 0.75; }
+  .box .port { font-size: 10px; opacity: 0.6; margin-top: 2px; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+  /* Client Layer */
+  .client-label { background: #1e3a5f; color: #7dd3fc; }
+  .client-content { background: #0c1e35; border: 1px solid #1e3a5f; }
+  .client-box { background: linear-gradient(135deg, #1e3a5f, #1e40af); border: 1px solid #3b82f6; color: #dbeafe; }
+
+  /* Gateway Layer */
+  .gw-label { background: #3b1d60; color: #c4b5fd; }
+  .gw-content { background: #1a0e30; border: 1px solid #3b1d60; }
+  .gw-box { background: linear-gradient(135deg, #4c1d95, #6d28d9); border: 1px solid #7c3aed; color: #ede9fe; min-width: 200px; }
+  .filter-tag { display: inline-block; background: rgba(139,92,246,0.3); border: 1px solid #7c3aed; border-radius: 4px; padding: 2px 8px; font-size: 10px; margin: 2px; color: #c4b5fd; }
+
+  /* Service Layer */
+  .svc-label { background: #14532d; color: #86efac; }
+  .svc-content { background: #052e16; border: 1px solid #14532d; }
+  .svc-box { background: linear-gradient(135deg, #14532d, #166534); border: 1px solid #22c55e; color: #dcfce7; }
+
+  /* API Layer (Feign) */
+  .api-label { background: #713f12; color: #fde68a; }
+  .api-content { background: #422006; border: 1px solid #713f12; }
+  .api-box { background: linear-gradient(135deg, #78350f, #92400e); border: 1px solid #f59e0b; color: #fef3c7; min-width: 100px; padding: 8px 12px; }
+
+  /* Middleware Layer */
+  .mw-label { background: #7f1d1d; color: #fca5a5; }
+  .mw-content { background: #350a0a; border: 1px solid #7f1d1d; }
+  .mw-box { background: linear-gradient(135deg, #7f1d1d, #991b1b); border: 1px solid #ef4444; color: #fee2e2; }
+
+  /* Infra Layer */
+  .infra-label { background: #164e63; color: #67e8f9; }
+  .infra-content { background: #083344; border: 1px solid #164e63; }
+  .infra-box { background: linear-gradient(135deg, #155e75, #0e7490); border: 1px solid #06b6d4; color: #cffafe; }
+
+  /* Observability */
+  .obs-label { background: #4a4063; color: #d8b4fe; }
+  .obs-content { background: #1e1533; border: 1px solid #4a4063; }
+  .obs-box { background: linear-gradient(135deg, #581c87, #7e22ce); border: 1px solid #a855f7; color: #f3e8ff; }
+
+  .arrow-down { text-align: center; color: #475569; font-size: 20px; line-height: 1; padding: 2px 0; }
+  .arrow-label { font-size: 10px; color: #64748b; }
+
+  .legend { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 24px; padding: 16px; background: #1e293b; border-radius: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  .dep-section { margin-top: 28px; max-width: 1400px; margin-left: auto; margin-right: auto; }
+  .dep-title { font-size: 18px; font-weight: 700; color: #f1f5f9; margin-bottom: 16px; text-align: center; }
+  .dep-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .dep-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px; }
+  .dep-card .svc-name { font-weight: 700; font-size: 14px; color: #22c55e; margin-bottom: 8px; }
+  .dep-card .dep-list { font-size: 12px; color: #94a3b8; line-height: 1.8; }
+  .dep-card .dep-list span { display: inline-block; background: #334155; border-radius: 4px; padding: 1px 8px; margin: 2px; font-size: 11px; }
+
+  .db-section { margin-top: 28px; max-width: 1400px; margin-left: auto; margin-right: auto; }
+  .db-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .db-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; text-align: center; }
+  .db-card .db-name { font-weight: 700; font-size: 13px; color: #06b6d4; }
+  .db-card .db-svc { font-size: 11px; color: #64748b; margin-top: 4px; }
+
+  .tech-stack { margin-top: 28px; max-width: 1400px; margin-left: auto; margin-right: auto; margin-bottom: 40px; }
+  .ts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .ts-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px; }
+  .ts-card h3 { font-size: 14px; color: #f1f5f9; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #334155; }
+  .ts-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+  .ts-row .k { color: #94a3b8; }
+  .ts-row .v { color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', monospace; }
+</style>
+</head>
+<body>
+
+<h1>E-Commerce Platform Technical Architecture</h1>
+<p class="subtitle">Java 21 + Spring Boot 3.3 + Spring Cloud Alibaba + Vue 3 | Microservices with 9 backend services + 2 frontend apps</p>
+
+<div class="arch">
+
+  <!-- Client Layer -->
+  <div class="layer">
+    <div class="layer-label client-label">CLIENT</div>
+    <div class="layer-content client-content">
+      <div class="box client-box">
+        <div class="title">Mall Frontend</div>
+        <div class="desc">Vue 3 + Element Plus + Pinia</div>
+        <div class="port">:3000</div>
+      </div>
+      <div class="box client-box">
+        <div class="title">Admin Frontend</div>
+        <div class="desc">Vue 3 + Element Plus + Pinia</div>
+        <div class="port">:3001</div>
+      </div>
+      <div class="box client-box" style="background: linear-gradient(135deg, #1e3a5f, #1e40af); border: 1px dashed #3b82f6;">
+        <div class="title">@ecommerce/shared</div>
+        <div class="desc">pnpm monorepo shared lib</div>
+        <div class="port">API + Types + Utils</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC; <span class="arrow-label">HTTP / Axios</span></div>
+
+  <!-- Gateway Layer -->
+  <div class="layer">
+    <div class="layer-label gw-label">GATEWAY</div>
+    <div class="layer-content gw-content">
+      <div class="box gw-box">
+        <div class="title">Spring Cloud Gateway</div>
+        <div class="port">:8080 | WebFlux</div>
+        <div style="margin-top: 8px;">
+          <span class="filter-tag">TraceId Filter</span>
+          <span class="filter-tag">Rate Limit (Redis)</span>
+          <span class="filter-tag">JWT Auth Filter</span>
+          <span class="filter-tag">CORS</span>
+          <span class="filter-tag">StripPrefix=1</span>
+          <span class="filter-tag">OpenAPI Aggregation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC; <span class="arrow-label">/api/{service}/** -> StripPrefix -> localhost:{port}</span></div>
+
+  <!-- Service Layer -->
+  <div class="layer">
+    <div class="layer-label svc-label">SERVICES</div>
+    <div class="layer-content svc-content">
+      <div class="box svc-box">
+        <div class="title">Auth Service</div>
+        <div class="desc">JWT / RBAC / Login</div>
+        <div class="port">:8081</div>
+      </div>
+      <div class="box svc-box">
+        <div class="title">Product Service</div>
+        <div class="desc">SPU/SKU / Category / CMS</div>
+        <div class="port">:8082</div>
+      </div>
+      <div class="box svc-box">
+        <div class="title">User Service</div>
+        <div class="desc">Profile / Address / Audit</div>
+        <div class="port">:8083</div>
+      </div>
+      <div class="box svc-box">
+        <div class="title">Order Service</div>
+        <div class="desc">Order / Cart / Payment</div>
+        <div class="port">:8084</div>
+      </div>
+      <div class="box svc-box">
+        <div class="title">Inventory Service</div>
+        <div class="desc">Stock / Lock / Log</div>
+        <div class="port">:8085</div>
+      </div>
+      <div class="box svc-box">
+        <div class="title">Marketing Service</div>
+        <div class="desc">Coupon / Promo / Points</div>
+        <div class="port">:8086</div>
+      </div>
+      <div class="box svc-box">
+        <div class="title">AfterSales Service</div>
+        <div class="desc">Return / Exchange / Ticket</div>
+        <div class="port">:8087</div>
+      </div>
+      <div class="box svc-box">
+        <div class="title">File Service</div>
+        <div class="desc">Upload / MinIO / Local</div>
+        <div class="port">:8088</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC; <span class="arrow-label">Feign (inter-service) + JDBC / Redis / MQ / ES</span></div>
+
+  <!-- Feign API Layer -->
+  <div class="layer">
+    <div class="layer-label api-label">FEIGN API</div>
+    <div class="layer-content api-content">
+      <div class="box api-box"><div class="title">product-api</div></div>
+      <div class="box api-box"><div class="title">user-api</div></div>
+      <div class="box api-box"><div class="title">order-api</div></div>
+      <div class="box api-box"><div class="title">inventory-api</div></div>
+      <div class="box api-box"><div class="title">marketing-api</div></div>
+      <div class="box api-box"><div class="title">aftersales-api</div></div>
+      <div class="box api-box"><div class="title">file-api</div></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <!-- Middleware Layer -->
+  <div class="layer">
+    <div class="layer-label mw-label">MIDDLEWARE</div>
+    <div class="layer-content mw-content">
+      <div class="box mw-box">
+        <div class="title">MySQL 8.0</div>
+        <div class="desc">8 databases (per-service)</div>
+        <div class="port">:3307</div>
+      </div>
+      <div class="box mw-box">
+        <div class="title">Redis 7</div>
+        <div class="desc">Cache / Lock / Rate Limit</div>
+        <div class="port">:6379</div>
+      </div>
+      <div class="box mw-box">
+        <div class="title">RabbitMQ 3.13</div>
+        <div class="desc">Async Events / Audit Log</div>
+        <div class="port">:5672 / :15672</div>
+      </div>
+      <div class="box mw-box">
+        <div class="title">Elasticsearch 8.15</div>
+        <div class="desc">Product Full-text Search</div>
+        <div class="port">:9200</div>
+      </div>
+      <div class="box mw-box">
+        <div class="title">MinIO</div>
+        <div class="desc">Object Storage</div>
+        <div class="port">:9000 / :9001</div>
+      </div>
+      <div class="box mw-box">
+        <div class="title">Nacos 2.3</div>
+        <div class="desc">Discovery + Config</div>
+        <div class="port">:8848</div>
+      </div>
+      <div class="box mw-box">
+        <div class="title">Seata 2.0</div>
+        <div class="desc">Distributed TX (AT mode)</div>
+        <div class="port">:8091</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <!-- Observability Layer -->
+  <div class="layer">
+    <div class="layer-label obs-label">OBSERVABILITY</div>
+    <div class="layer-content obs-content">
+      <div class="box obs-box">
+        <div class="title">Prometheus</div>
+        <div class="desc">Metrics Collection</div>
+        <div class="port">:9090</div>
+      </div>
+      <div class="box obs-box">
+        <div class="title">Grafana</div>
+        <div class="desc">Metrics Dashboard</div>
+        <div class="port">:3002</div>
+      </div>
+      <div class="box obs-box">
+        <div class="title">Zipkin</div>
+        <div class="desc">Distributed Tracing</div>
+        <div class="port">:9411</div>
+      </div>
+      <div class="box obs-box">
+        <div class="title">Kibana</div>
+        <div class="desc">ES Visualization</div>
+        <div class="port">:5601</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#3b82f6;"></div>Client (Vue 3)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed;"></div>Gateway (Spring Cloud Gateway)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>Microservices (Spring Boot 3.3)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;"></div>Feign API (Inter-service)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div>Middleware (Data & Messaging)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div>Observability (Metrics & Tracing)</div>
+</div>
+
+<!-- Service Dependencies -->
+<div class="dep-section">
+  <div class="dep-title">Service Dependencies (Feign Calls)</div>
+  <div class="dep-grid">
+    <div class="dep-card">
+      <div class="svc-name">Order Service</div>
+      <div class="dep-list">
+        <span>product-api</span><span>user-api</span><span>order-api</span><span>inventory-api</span><span>marketing-api</span>
+      </div>
+    </div>
+    <div class="dep-card">
+      <div class="svc-name">Product Service</div>
+      <div class="dep-list">
+        <span>product-api</span><span>order-api</span><span>user-api</span>
+      </div>
+    </div>
+    <div class="dep-card">
+      <div class="svc-name">User Service</div>
+      <div class="dep-list">
+        <span>user-api</span><span>product-api</span>
+      </div>
+    </div>
+    <div class="dep-card">
+      <div class="svc-name">AfterSales Service</div>
+      <div class="dep-list">
+        <span>aftersales-api</span><span>order-api</span>
+      </div>
+    </div>
+    <div class="dep-card">
+      <div class="svc-name">Inventory Service</div>
+      <div class="dep-list">
+        <span>inventory-api</span>
+      </div>
+    </div>
+    <div class="dep-card">
+      <div class="svc-name">Marketing Service</div>
+      <div class="dep-list">
+        <span>marketing-api</span>
+      </div>
+    </div>
+    <div class="dep-card">
+      <div class="svc-name">File Service</div>
+      <div class="dep-list">
+        <span>file-api</span>
+      </div>
+    </div>
+    <div class="dep-card">
+      <div class="svc-name">Auth Service</div>
+      <div class="dep-list" style="color:#64748b;">Standalone (no Feign deps)</div>
+    </div>
+  </div>
+</div>
+
+<!-- Database Mapping -->
+<div class="db-section">
+  <div class="dep-title">Database Mapping (MySQL 8.0)</div>
+  <div class="db-grid">
+    <div class="db-card"><div class="db-name">ecommerce_user</div><div class="db-svc">Auth + User Service</div></div>
+    <div class="db-card"><div class="db-name">ecommerce_product</div><div class="db-svc">Product Service</div></div>
+    <div class="db-card"><div class="db-name">ecommerce_order</div><div class="db-svc">Order Service</div></div>
+    <div class="db-card"><div class="db-name">ecommerce_inventory</div><div class="db-svc">Inventory Service</div></div>
+    <div class="db-card"><div class="db-name">ecommerce_marketing</div><div class="db-svc">Marketing Service</div></div>
+    <div class="db-card"><div class="db-name">ecommerce_aftersales</div><div class="db-svc">AfterSales Service</div></div>
+    <div class="db-card"><div class="db-name">ecommerce_file</div><div class="db-svc">File Service</div></div>
+    <div class="db-card"><div class="db-name">nacos_config</div><div class="db-svc">Nacos Server</div></div>
+    <div class="db-card"><div class="db-name">seata</div><div class="db-svc">Seata TC</div></div>
+  </div>
+</div>
+
+<!-- Tech Stack -->
+<div class="tech-stack">
+  <div class="dep-title">Technology Stack</div>
+  <div class="ts-grid">
+    <div class="ts-card">
+      <h3>Backend</h3>
+      <div class="ts-row"><span class="k">Language</span><span class="v">Java 21</span></div>
+      <div class="ts-row"><span class="k">Framework</span><span class="v">Spring Boot 3.3.13</span></div>
+      <div class="ts-row"><span class="k">Cloud</span><span class="v">Spring Cloud 2023.0.4</span></div>
+      <div class="ts-row"><span class="k">Cloud Alibaba</span><span class="v">2023.0.3.4</span></div>
+      <div class="ts-row"><span class="k">ORM</span><span class="v">MyBatis-Plus 3.5.7</span></div>
+      <div class="ts-row"><span class="k">Auth</span><span class="v">JJWT 0.12.6 + BCrypt</span></div>
+      <div class="ts-row"><span class="k">Distributed TX</span><span class="v">Seata 2.0 (AT mode)</span></div>
+      <div class="ts-row"><span class="k">API Docs</span><span class="v">SpringDoc OpenAPI 2.6</span></div>
+      <div class="ts-row"><span class="k">Cache/Lock</span><span class="v">Redisson 3.37.0</span></div>
+    </div>
+    <div class="ts-card">
+      <h3>Frontend</h3>
+      <div class="ts-row"><span class="k">Framework</span><span class="v">Vue 3.5.12</span></div>
+      <div class="ts-row"><span class="k">Build</span><span class="v">Vite 6.0.3</span></div>
+      <div class="ts-row"><span class="k">Language</span><span class="v">TypeScript 5.6.3</span></div>
+      <div class="ts-row"><span class="k">UI Library</span><span class="v">Element Plus 2.8.8</span></div>
+      <div class="ts-row"><span class="k">State</span><span class="v">Pinia 2.2.6</span></div>
+      <div class="ts-row"><span class="k">Router</span><span class="v">Vue Router 4.4.5</span></div>
+      <div class="ts-row"><span class="k">HTTP</span><span class="v">Axios 1.7.7</span></div>
+      <div class="ts-row"><span class="k">Test</span><span class="v">Vitest 3.2.4</span></div>
+      <div class="ts-row"><span class="k">Pkg Manager</span><span class="v">pnpm (workspaces)</span></div>
+    </div>
+    <div class="ts-card">
+      <h3>Infrastructure & CI/CD</h3>
+      <div class="ts-row"><span class="k">Container</span><span class="v">Docker Compose</span></div>
+      <div class="ts-row"><span class="k">JRE Base</span><span class="v">Eclipse Temurin 21</span></div>
+      <div class="ts-row"><span class="k">CI/CD</span><span class="v">GitHub Actions</span></div>
+      <div class="ts-row"><span class="k">Discovery</span><span class="v">Nacos 2.3.2</span></div>
+      <div class="ts-row"><span class="k">Gateway</span><span class="v">Spring Cloud Gateway</span></div>
+      <div class="ts-row"><span class="k">Search</span><span class="v">Elasticsearch 8.15</span></div>
+      <div class="ts-row"><span class="k">MQ</span><span class="v">RabbitMQ 3.13</span></div>
+      <div class="ts-row"><span class="k">Storage</span><span class="v">MinIO</span></div>
+      <div class="ts-row"><span class="k">Utilities</span><span class="v">Hutool 5.8 / Lombok / POI 5.2</span></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
