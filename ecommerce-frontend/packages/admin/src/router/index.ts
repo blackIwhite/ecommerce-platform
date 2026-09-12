@@ -99,6 +99,21 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/system/FileManage.vue'),
       },
       {
+        path: 'system/shipping-template',
+        name: 'ShippingTemplate',
+        component: () => import('@/views/system/ShippingTemplate.vue'),
+      },
+      {
+        path: 'system/dict',
+        name: 'DictManage',
+        component: () => import('@/views/system/DictManage.vue'),
+      },
+      {
+        path: 'system/sensitive-word',
+        name: 'SensitiveWord',
+        component: () => import('@/views/system/SensitiveWord.vue'),
+      },
+      {
         path: 'cms/article',
         name: 'ArticleList',
         component: () => import('@/views/cms/ArticleList.vue'),
