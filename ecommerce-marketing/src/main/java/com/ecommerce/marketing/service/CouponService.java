@@ -33,4 +33,6 @@ public interface CouponService {
     CouponUseResponse useCoupon(CouponUseRequest request);
 
     void releaseCoupon(Long userCouponId);
+
+    int expireUnusedCoupons();
 }

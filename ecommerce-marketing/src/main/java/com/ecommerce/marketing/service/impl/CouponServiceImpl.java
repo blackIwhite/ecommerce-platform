@@ -249,6 +249,15 @@ public class CouponServiceImpl implements CouponService {
         userCouponMapper.update(null, wrapper);
     }
 
+    @Override
+    public int expireUnusedCoupons() {
+        LambdaUpdateWrapper<UserCoupon> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(UserCoupon::getStatus, 0)
+                .lt(UserCoupon::getExpireTime, LocalDateTime.now())
+                .set(UserCoupon::getStatus, 2);
+        return userCouponMapper.update(null, wrapper);
+    }
+
     private BigDecimal calculateDiscount(UserCoupon userCoupon, BigDecimal orderAmount) {
         BigDecimal discount;
         if (userCoupon.getType() == 1) {
