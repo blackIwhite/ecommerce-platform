@@ -53,19 +53,30 @@ public class ReportController {
     @GetMapping("/export/orders")
     public void exportOrders(@RequestParam(required = false) String startDate,
                              @RequestParam(required = false) String endDate,
-                             HttpServletResponse response) throws IOException {
-        // Build the workbook before touching the response so failures still return a JSON error.
+                             HttpServletResponse response) {
         byte[] bytes = reportService.exportOrders(startDate, endDate);
-        writeExcel(response, "orders.xlsx", bytes);
+        try {
+            writeExcel(response, "orders.xlsx", bytes);
+        } catch (IOException e) {
+            throw new com.ecommerce.common.core.exception.BusinessException(
+                    com.ecommerce.common.core.result.ResultCode.INTERNAL_ERROR,
+                    "Failed to write Excel response");
+        }
     }
 
     @AuditLog(module = "报表", operation = "导出商品销量", description = "管理员导出商品销量 Excel")
     @GetMapping("/export/products")
     public void exportProducts(@RequestParam(required = false) String startDate,
                                @RequestParam(required = false) String endDate,
-                               HttpServletResponse response) throws IOException {
+                               HttpServletResponse response) {
         byte[] bytes = reportService.exportProducts(startDate, endDate);
-        writeExcel(response, "products.xlsx", bytes);
+        try {
+            writeExcel(response, "products.xlsx", bytes);
+        } catch (IOException e) {
+            throw new com.ecommerce.common.core.exception.BusinessException(
+                    com.ecommerce.common.core.result.ResultCode.INTERNAL_ERROR,
+                    "Failed to write Excel response");
+        }
     }
 
     private void writeExcel(HttpServletResponse response, String fileName, byte[] bytes) throws IOException {

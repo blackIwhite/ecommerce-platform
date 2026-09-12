@@ -43,6 +43,7 @@ import com.ecommerce.order.service.OrderService;
 import com.ecommerce.order.service.PaymentService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -137,6 +138,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @GlobalTransactional(rollbackFor = Exception.class)
     @Transactional(rollbackFor = Exception.class)
     public Long submitOrder(OrderSubmitRequest request) {
         Long userId = UserContextHolder.getUserId();
@@ -399,6 +401,43 @@ public class OrderServiceImpl implements OrderService {
             return;
         }
         doCancel(order, "Payment timeout auto-cancel", "system");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void autoConfirmOrder(Long orderId) {
+        Order order = orderMapper.selectById(orderId);
+        if (order == null || order.getStatus() != OrderStatus.SHIPPED.getCode()) {
+            log.info("Auto-confirm skipped, orderId={}, status={}", orderId,
+                    order != null ? order.getStatus() : "not found");
+            return;
+        }
+        order.setStatus(OrderStatus.COMPLETED.getCode());
+        orderMapper.updateById(order);
+        saveStatusLog(orderId, OrderStatus.SHIPPED.getCode(), OrderStatus.COMPLETED.getCode(),
+                "system", "auto-confirm after 14 days");
+
+        try {
+            LambdaQueryWrapper<OrderItem> itemWrapper = new LambdaQueryWrapper<>();
+            itemWrapper.eq(OrderItem::getOrderId, orderId);
+            List<OrderItem> items = orderItemMapper.selectList(itemWrapper);
+            List<Long> skuIds = items.stream().map(OrderItem::getSkuId).toList();
+            List<SkuDTO> skus = productApi.getSkuListByIds(skuIds).getData();
+            List<SalesIncrementItem> incrementItems = items.stream().map(item -> {
+                Long spuId = skus.stream()
+                        .filter(s -> s.getSkuId().equals(item.getSkuId()))
+                        .findFirst()
+                        .map(SkuDTO::getSpuId)
+                        .orElse(item.getSkuId());
+                return SalesIncrementItem.builder()
+                        .spuId(spuId)
+                        .quantity(item.getQuantity())
+                        .build();
+            }).toList();
+            productApi.incrementSales(incrementItems);
+        } catch (Exception e) {
+            log.warn("Failed to increment sales for order {}: {}", orderId, e.getMessage());
+        }
     }
 
     @Override

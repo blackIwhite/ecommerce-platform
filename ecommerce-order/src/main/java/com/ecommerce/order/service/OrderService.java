@@ -35,6 +35,8 @@ public interface OrderService {
 
     void autoCancelOrder(Long orderId);
 
+    void autoConfirmOrder(Long orderId);
+
     LogisticsTraceDTO getLogisticsTrace(Long orderId);
 
     List<OrderItemDTO> getOrderItems(Long orderId);
