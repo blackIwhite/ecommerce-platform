@@ -113,6 +113,11 @@ const routes: RouteRecordRaw[] = [
     name: 'BrowseHistory',
     component: () => import('@/views/user/BrowseHistory.vue'),
   },
+  {
+    path: '/compare',
+    name: 'ProductCompare',
+    component: () => import('@/views/product/Compare.vue'),
+  },
 ]
 
 const router = createRouter({

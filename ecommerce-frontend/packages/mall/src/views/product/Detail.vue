@@ -63,6 +63,9 @@
               <el-icon><StarFilled v-if="isFavorited" /><Star v-else /></el-icon>
               {{ isFavorited ? '已收藏' : '收藏' }}
             </el-button>
+            <el-button size="large" :type="isInCompare ? 'info' : 'default'" @click="toggleCompare">
+              {{ isInCompare ? '已加入对比' : '加入对比' }}
+            </el-button>
           </div>
         </div>
       </div>
@@ -224,6 +227,37 @@ const toggleFavorite = async () => {
 const buyNow = () => {
   if (!selectedSku.value) return
   router.push(`/checkout?skuId=${selectedSku.value.skuId}&quantity=${quantity.value}`)
+}
+
+const COMPARE_KEY = 'compare_spu_ids'
+
+const compareIds = computed(() => {
+  const raw = localStorage.getItem(COMPARE_KEY)
+  return raw ? JSON.parse(raw) as number[] : []
+})
+
+const isInCompare = computed(() => {
+  const spuId = Number(route.params.id)
+  return compareIds.value.includes(spuId)
+})
+
+const toggleCompare = () => {
+  const spuId = Number(route.params.id)
+  if (!spuId) return
+  const ids = compareIds.value
+  const idx = ids.indexOf(spuId)
+  if (idx >= 0) {
+    ids.splice(idx, 1)
+    ElMessage.success('已从对比中移除')
+  } else {
+    if (ids.length >= 4) {
+      ElMessage.warning('最多对比4个商品')
+      return
+    }
+    ids.push(spuId)
+    ElMessage.success('已加入对比')
+  }
+  localStorage.setItem(COMPARE_KEY, JSON.stringify(ids))
 }
 
 onMounted(async () => {

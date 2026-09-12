@@ -1,20 +1,75 @@
 <template>
   <div class="product-list-page">
     <div class="filter-section">
-      <el-input
-        v-model="queryParams.keyword"
-        placeholder="搜索商品"
-        clearable
-        style="width: 300px"
-        @keyup.enter="handleSearch"
-        @clear="handleSearch"
-      >
-        <template #append>
-          <el-button @click="handleSearch">
-            <el-icon><Search /></el-icon>
-          </el-button>
-        </template>
-      </el-input>
+      <div class="search-wrapper" ref="searchWrapperRef">
+        <el-input
+          v-model="queryParams.keyword"
+          placeholder="搜索商品"
+          clearable
+          style="width: 360px"
+          @keyup.enter="handleSearch"
+          @clear="handleSearch"
+          @focus="showDropdown = true"
+          @input="onKeywordInput"
+        >
+          <template #append>
+            <el-button @click="handleSearch">
+              <el-icon><Search /></el-icon>
+            </el-button>
+          </template>
+        </el-input>
+
+        <div class="search-dropdown" v-if="showDropdown">
+          <div v-if="suggestions.length && queryParams.keyword" class="dropdown-section">
+            <div class="section-title">搜索建议</div>
+            <div class="tag-list">
+              <span
+                v-for="s in suggestions"
+                :key="s"
+                class="keyword-tag"
+                @click="searchKeyword(s)"
+              >{{ s }}</span>
+            </div>
+          </div>
+
+          <div v-if="history.length && !queryParams.keyword" class="dropdown-section">
+            <div class="section-title">
+              <span>搜索历史</span>
+              <el-icon class="clear-btn" @click="handleClearHistory"><Delete /></el-icon>
+            </div>
+            <div class="tag-list">
+              <span
+                v-for="h in history"
+                :key="h"
+                class="keyword-tag"
+                @click="searchKeyword(h)"
+              >{{ h }}</span>
+            </div>
+          </div>
+
+          <div v-if="hotSearches.length" class="dropdown-section">
+            <div class="section-title">热门搜索</div>
+            <div class="tag-list">
+              <span
+                v-for="(item, idx) in hotSearches"
+                :key="item.id"
+                class="keyword-tag"
+                :class="{ hot: idx < 3 }"
+                @click="searchKeyword(item.keyword)"
+              >
+                <span class="rank" v-if="idx < 3">{{ idx + 1 }}</span>
+                {{ item.keyword }}
+              </span>
+            </div>
+          </div>
+
+          <el-empty
+            v-if="!suggestions.length && !history.length && !hotSearches.length"
+            description="暂无数据"
+            :image-size="60"
+          />
+        </div>
+      </div>
 
       <div class="category-filter" v-if="categoryTree.length > 0">
         <el-check-tag
@@ -90,15 +145,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { Search, Picture } from '@element-plus/icons-vue'
-import { productApi } from '@ecommerce/shared'
-import type { SpuDTO, CategoryDTO } from '@ecommerce/shared'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { Search, Picture, Delete } from '@element-plus/icons-vue'
+import { productApi, searchApi } from '@ecommerce/shared'
+import type { SpuDTO, CategoryDTO, HotSearchDTO } from '@ecommerce/shared'
 
 const loading = ref(false)
 const tableData = ref<SpuDTO[]>([])
 const total = ref(0)
 const categoryTree = ref<CategoryDTO[]>([])
+
+const showDropdown = ref(false)
+const history = ref<string[]>([])
+const hotSearches = ref<HotSearchDTO[]>([])
+const suggestions = ref<string[]>([])
+const searchWrapperRef = ref<HTMLElement | null>(null)
+let suggestTimer: ReturnType<typeof setTimeout> | null = null
 
 const queryParams = reactive({
   pageNum: 1,
@@ -170,17 +232,82 @@ async function fetchData() {
 }
 
 function handleSearch() {
+  showDropdown.value = false
+  const kw = queryParams.keyword?.trim()
+  if (kw) {
+    searchApi.record(kw).catch(() => {})
+  }
   queryParams.pageNum = 1
   fetchData()
 }
 
+function searchKeyword(kw: string) {
+  queryParams.keyword = kw
+  handleSearch()
+}
+
+function onKeywordInput() {
+  if (suggestTimer) clearTimeout(suggestTimer)
+  const kw = queryParams.keyword?.trim()
+  if (!kw) {
+    suggestions.value = []
+    return
+  }
+  suggestTimer = setTimeout(async () => {
+    try {
+      suggestions.value = await searchApi.getSuggestions(kw)
+    } catch {
+      suggestions.value = []
+    }
+  }, 300)
+}
+
+async function loadHistory() {
+  try {
+    history.value = await searchApi.getHistory()
+  } catch {
+    history.value = []
+  }
+}
+
+async function loadHotSearches() {
+  try {
+    hotSearches.value = await searchApi.getHotSearches()
+  } catch {
+    hotSearches.value = []
+  }
+}
+
+async function handleClearHistory() {
+  try {
+    await searchApi.clearHistory()
+    history.value = []
+  } catch {
+    // ignore
+  }
+}
+
+function onClickOutside(e: MouseEvent) {
+  if (searchWrapperRef.value && !searchWrapperRef.value.contains(e.target as Node)) {
+    showDropdown.value = false
+  }
+}
+
 onMounted(async () => {
   fetchData()
+  loadHistory()
+  loadHotSearches()
+  document.addEventListener('click', onClickOutside)
   try {
     categoryTree.value = await productApi.getCategoryTree()
   } catch {
     // non-critical
   }
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onClickOutside)
+  if (suggestTimer) clearTimeout(suggestTimer)
 })
 </script>
 
@@ -277,5 +404,105 @@ onMounted(async () => {
   color: #e4393c;
   font-weight: 600;
   margin-top: 6px;
+}
+
+.search-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 360px;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  padding: 12px 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.dropdown-section {
+  margin-bottom: 16px;
+}
+
+.dropdown-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.clear-btn {
+  cursor: pointer;
+  font-size: 14px;
+  color: #ccc;
+  transition: color 0.2s;
+}
+
+.clear-btn:hover {
+  color: #e4393c;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.keyword-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  font-size: 13px;
+  color: #666;
+  background: #f5f7fa;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.keyword-tag:hover {
+  background: #e8eaed;
+  color: #333;
+}
+
+.keyword-tag.hot {
+  background: #fff5f0;
+  color: #ff6600;
+}
+
+.keyword-tag.hot:hover {
+  background: #ffe8d6;
+}
+
+.keyword-tag .rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #ff6600;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 </style>
