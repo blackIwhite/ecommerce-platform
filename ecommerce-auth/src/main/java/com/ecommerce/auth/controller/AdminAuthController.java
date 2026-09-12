@@ -3,7 +3,6 @@ package com.ecommerce.auth.controller;
 import com.ecommerce.auth.dto.AdminLoginRequest;
 import com.ecommerce.auth.dto.AdminLoginResponse;
 import com.ecommerce.auth.dto.AdminUserDTO;
-import com.ecommerce.auth.dto.MenuDTO;
 import com.ecommerce.auth.service.AdminService;
 import com.ecommerce.auth.service.JwtService;
 import com.ecommerce.common.core.annotation.AuditLog;
@@ -13,8 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/auth/admin")
@@ -36,13 +33,6 @@ public class AdminAuthController {
         Long adminUserId = extractAdminUserId(request);
         AdminUserDTO info = adminService.getAdminInfo(adminUserId);
         return Result.success(info);
-    }
-
-    @GetMapping("/menus")
-    public Result<List<MenuDTO>> getAdminMenus(HttpServletRequest request) {
-        Long adminUserId = extractAdminUserId(request);
-        List<MenuDTO> menus = adminService.listMenusByAdmin(adminUserId);
-        return Result.success(menus);
     }
 
     private Long extractAdminUserId(HttpServletRequest request) {

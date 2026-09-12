@@ -19,6 +19,7 @@ import com.ecommerce.product.entity.Spu;
 import com.ecommerce.product.mapper.ReviewMapper;
 import com.ecommerce.product.mapper.SpuMapper;
 import com.ecommerce.product.service.ReviewService;
+import com.ecommerce.product.service.SensitiveWordFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final SpuMapper spuMapper;
     private final OrderApi orderApi;
     private final UserApi userApi;
+    private final SensitiveWordFilter sensitiveWordFilter;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -65,13 +67,18 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BusinessException(ResultCode.REVIEW_ALREADY_EXISTS);
         }
 
+        String content = request.getContent();
+        if (content != null && sensitiveWordFilter.containsSensitiveWord(content)) {
+            content = sensitiveWordFilter.filter(content);
+        }
+
         Review review = Review.builder()
                 .spuId(request.getSpuId())
                 .skuId(request.getSkuId())
                 .userId(currentUserId)
                 .orderId(request.getOrderId())
                 .rating(request.getRating())
-                .content(request.getContent())
+                .content(content)
                 .images(request.getImages())
                 .build();
         reviewMapper.insert(review);

@@ -12,6 +12,7 @@ import com.ecommerce.product.entity.ArticleCategory;
 import com.ecommerce.product.mapper.ArticleCategoryMapper;
 import com.ecommerce.product.mapper.ArticleMapper;
 import com.ecommerce.product.service.ArticleService;
+import com.ecommerce.product.service.SensitiveWordFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleMapper articleMapper;
     private final ArticleCategoryMapper articleCategoryMapper;
+    private final SensitiveWordFilter sensitiveWordFilter;
 
     /** 0=draft, 1=published, 2=archived */
     private static final int STATUS_DRAFT = 0;
@@ -95,11 +97,20 @@ public class ArticleServiceImpl implements ArticleService {
             ensureSlugUnique(slug, null);
         }
 
+        String content = dto.getContent();
+        String summary = dto.getSummary();
+        if (content != null && sensitiveWordFilter.containsSensitiveWord(content)) {
+            content = sensitiveWordFilter.filter(content);
+        }
+        if (summary != null && sensitiveWordFilter.containsSensitiveWord(summary)) {
+            summary = sensitiveWordFilter.filter(summary);
+        }
+
         Article article = Article.builder()
                 .title(dto.getTitle())
                 .slug(slug)
-                .content(dto.getContent())
-                .summary(dto.getSummary())
+                .content(content)
+                .summary(summary)
                 .coverImage(dto.getCoverImage())
                 .categoryId(dto.getCategoryId())
                 .author(dto.getAuthor())

@@ -102,7 +102,17 @@ public enum ResultCode {
 
     // Message center codes (2xxx continued)
     MESSAGE_NOT_FOUND(2020, "Message not found"),
-    MESSAGE_ACCESS_DENIED(2021, "No permission to read this message");
+    MESSAGE_ACCESS_DENIED(2021, "No permission to read this message"),
+
+    // Dict module codes (2xxx continued)
+    DICT_TYPE_NOT_FOUND(2030, "Dictionary type not found"),
+    DICT_ITEM_NOT_FOUND(2031, "Dictionary item not found"),
+
+    // Shipping template codes (3xxx continued)
+    SHIPPING_TEMPLATE_NOT_FOUND(3020, "Shipping template not found"),
+
+    // Sensitive word codes (3xxx continued)
+    CONTENT_CONTAINS_SENSITIVE_WORD(3030, "Content contains sensitive words");
 
     private final int code;
     private final String message;
