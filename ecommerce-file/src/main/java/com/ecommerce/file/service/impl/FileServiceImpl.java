@@ -9,14 +9,16 @@ import com.ecommerce.file.dto.FileDTO;
 import com.ecommerce.file.entity.FileRecord;
 import com.ecommerce.file.mapper.FileRecordMapper;
 import com.ecommerce.file.service.FileService;
-import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 @Slf4j
@@ -25,13 +27,12 @@ import java.util.UUID;
 public class FileServiceImpl implements FileService {
 
     private final FileRecordMapper fileRecordMapper;
-    private final MinioClient minioClient;
 
-    @Value("${minio.bucket}")
-    private String bucket;
+    @Value("${file.upload-dir:./uploads}")
+    private String uploadDir;
 
-    @Value("${minio.endpoint}")
-    private String endpoint;
+    @Value("${file.base-url:http://localhost:8080/api/file}")
+    private String baseUrl;
 
     @Override
     public FileDTO upload(MultipartFile file) {
@@ -41,30 +42,26 @@ public class FileServiceImpl implements FileService {
             if (originalName != null && originalName.contains(".")) {
                 extension = originalName.substring(originalName.lastIndexOf("."));
             }
-            String storagePath = UUID.randomUUID().toString().replace("-", "") + extension;
+            String storageName = UUID.randomUUID().toString().replace("-", "") + extension;
             String contentType = file.getContentType();
 
-            InputStream inputStream = file.getInputStream();
-            minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucket)
-                    .object(storagePath)
-                    .stream(inputStream, file.getSize(), -1)
-                    .contentType(contentType)
-                    .build());
+            Path dir = Paths.get(uploadDir);
+            Files.createDirectories(dir);
+            file.transferTo(dir.resolve(storageName).toFile());
 
-            String url = endpoint + "/" + bucket + "/" + storagePath;
+            String url = baseUrl + "/file/download/" + storageName;
 
             FileRecord record = FileRecord.builder()
                     .originalName(originalName)
-                    .storagePath(storagePath)
+                    .storagePath(storageName)
                     .fileSize(file.getSize())
                     .contentType(contentType)
-                    .bucket(bucket)
+                    .bucket("local")
                     .url(url)
                     .build();
             fileRecordMapper.insert(record);
 
-            log.info("File uploaded: {} -> {}", originalName, storagePath);
+            log.info("File uploaded: {} -> {}", originalName, storageName);
             return toDTO(record);
         } catch (BusinessException e) {
             throw e;
@@ -81,13 +78,10 @@ public class FileServiceImpl implements FileService {
             throw new BusinessException(ResultCode.FILE_NOT_FOUND);
         }
         try {
-            minioClient.removeObject(RemoveObjectArgs.builder()
-                    .bucket(record.getBucket())
-                    .object(record.getStoragePath())
-                    .build());
-        } catch (Exception e) {
-            log.error("Failed to delete file from MinIO: {}", record.getStoragePath(), e);
-            throw new BusinessException(ResultCode.FILE_DELETE_FAILED);
+            Path filePath = Paths.get(uploadDir, record.getStoragePath());
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            log.error("Failed to delete local file: {}", record.getStoragePath(), e);
         }
         fileRecordMapper.deleteById(id);
         log.info("File deleted: id={}, path={}", id, record.getStoragePath());
@@ -109,6 +103,15 @@ public class FileServiceImpl implements FileService {
         Page<FileRecord> page = fileRecordMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
         var records = page.getRecords().stream().map(this::toDTO).toList();
         return PageResult.of(records, page.getTotal(), pageNum, pageSize);
+    }
+
+    public Path resolveFile(String storageName) {
+        Path base = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path resolved = base.resolve(storageName).normalize();
+        if (!resolved.startsWith(base)) {
+            throw new BusinessException(ResultCode.FILE_NOT_FOUND);
+        }
+        return resolved;
     }
 
     private FileDTO toDTO(FileRecord record) {
