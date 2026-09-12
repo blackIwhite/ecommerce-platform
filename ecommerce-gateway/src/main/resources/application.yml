@@ -9,6 +9,7 @@ spring:
       discovery:
         server-addr: ${NACOS_ADDR:localhost:8848}
         ip: 127.0.0.1
+        enabled: true
       config:
         server-addr: ${NACOS_ADDR:localhost:8848}
         import-check:
@@ -16,59 +17,59 @@ spring:
     gateway:
       routes:
         - id: auth-service
-          uri: lb://ecommerce-auth
+          uri: http://localhost:8081
           predicates:
             - Path=/api/auth/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: product-service
-          uri: lb://ecommerce-product
+          uri: http://localhost:8082
           predicates:
             - Path=/api/product/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: user-service
-          uri: lb://ecommerce-user
+          uri: http://localhost:8083
           predicates:
             - Path=/api/user/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: order-service
-          uri: lb://ecommerce-order
+          uri: http://localhost:8084
           predicates:
             - Path=/api/order/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: cart-service
-          uri: lb://ecommerce-order
+          uri: http://localhost:8084
           predicates:
             - Path=/api/cart/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: inventory-service
-          uri: lb://ecommerce-inventory
+          uri: http://localhost:8085
           predicates:
             - Path=/api/inventory/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: marketing-service
-          uri: lb://ecommerce-marketing
+          uri: http://localhost:8086
           predicates:
             - Path=/api/marketing/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: aftersales-service
-          uri: lb://ecommerce-aftersales
+          uri: http://localhost:8087
           predicates:
             - Path=/api/aftersales/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: file-service
-          uri: lb://ecommerce-file
+          uri: http://localhost:8088
           predicates:
             - Path=/api/file/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -111,3 +112,5 @@ springdoc:
         url: /api/marketing/v3/api-docs
       - name: Aftersales Service
         url: /api/aftersales/v3/api-docs
+      - name: File Service
+        url: /api/file/v3/api-docs

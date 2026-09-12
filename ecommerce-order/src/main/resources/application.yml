@@ -46,9 +46,29 @@ management:
   endpoint:
     health:
       show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://${ZIPKIN_HOST:localhost}:${ZIPKIN_PORT:9411}/api/v2/spans
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+seata:
+  enabled: false
+  application-id: ${spring.application.name}
+  tx-service-group: ecommerce-tx-group
+  service:
+    vgroup-mapping:
+      ecommerce-tx-group: default
+    grouplist:
+      default: localhost:8091
+  registry:
+    type: file
+  config:
+    type: file
